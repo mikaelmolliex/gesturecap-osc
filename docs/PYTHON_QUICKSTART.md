@@ -39,6 +39,8 @@ uv sync
 
 This creates a `.venv` folder and installs everything (MediaPipe, OpenCV, python-osc). No manual `pip` or virtual-env steps needed.
 
+MediaPipe 0.10.14 also declares jax, matplotlib, sounddevice and a second OpenCV, which the hand tracker never uses. `pyproject.toml` leaves them out, and [utils/no_matplotlib.py](../utils/no_matplotlib.py) keeps MediaPipe from asking for matplotlib.
+
 ---
 
 ## 4. Hand model
@@ -72,8 +74,8 @@ OSC_PORT = 11111          # ← change to match your patch's inlet port
 uv run python doublehand_mp.py
 ```
 
-A preview window opens showing your webcam feed with hand skeletons drawn on it.  
-Press **`q`** in the preview window to quit cleanly.
+The webcam opens and the tracker starts streaming. It has no window of its own: draw the hands in your patch (for Max, see `max/mediapipe_handdraw.js`).  
+Press **`Ctrl+C`** in the terminal to quit cleanly.
 
 ---
 
@@ -115,7 +117,7 @@ With both hands visible, the tracker therefore sends up to two OSC messages per 
 
 All values arrive as floats:
 
-- **`x`** — horizontal position in the mirrored preview, `0.0` at the left edge and `1.0` at the right edge
+- **`x`** — horizontal position in the mirrored camera image, `0.0` at the left edge and `1.0` at the right edge
 - **`y`** — vertical position after inversion, `0.0` at the bottom and `1.0` at the top
 - **`z`** — inverted relative depth, approximately `0` at the wrist; values are not metric
 
@@ -128,16 +130,5 @@ A few starter mappings:
 - calculate the distance between thumb tip and index tip for a pinch gate
 - use the left and right hand payloads as independent controllers
 
-If you want to calculate derived gestures in Python, the relevant section is the `consumer()` function in [doublehand_mp.py](../doublehand_mp.py), where the 63-value list is assembled and sent through `client.send_message(...)`.
+If you want to calculate derived gestures in Python, the relevant section is the main loop in `main()` in [doublehand_mp.py](../doublehand_mp.py), where the 63-value list is assembled and sent through `client.send_message(...)`.
 
----
-
-## Toggling the preview window
-
-At the top of [doublehand_mp.py](../doublehand_mp.py):
-
-```python
-SHOW_PREVIEW = True   # set to False to hide the camera window
-```
-
-Set it to `False` if you want to run headless (e.g. during a live performance).

@@ -34,7 +34,7 @@ git clone https://github.com/mikaelmolliex/gesturecap-osc.git
 cd gesturecap-osc
 
 uv venv --python 3.10.12
-uv pip install -r requirements.txt
+uv pip install --no-deps -r requirements.txt
 uv pip install pyinstaller==6.21.0
 ```
 
@@ -43,8 +43,10 @@ Verify the environment:
 ```bash
 .venv/bin/python --version
 .venv/bin/python -m PyInstaller --version
-.venv/bin/python -c "import cv2, mediapipe, pythonosc; print('Dependencies: OK')"
+.venv/bin/python -c "import utils.no_matplotlib, cv2, mediapipe, pythonosc; print('Dependencies: OK')"
 ```
+
+`requirements.txt` is the complete, pinned list of what the tracker needs. `--no-deps` keeps out the packages MediaPipe 0.10.14 declares but the tracker never uses (jax, jaxlib, matplotlib, sounddevice, and a second OpenCV). `utils/no_matplotlib.py` must be imported before `mediapipe`, as `utils/hand_pose_detector.py` does.
 
 Calling `.venv/bin/python` directly also avoids activation-path problems if a virtual environment was created before the project directory was moved.
 
@@ -61,10 +63,26 @@ Expected behavior:
 - the webcam opens
 - MediaPipe initializes
 - hand landmarks are detected
-- the preview appears
 - OSC data is sent to `127.0.0.1:11111`
 
 Stop the tracker with `Ctrl+C`. Do not create a release build until the source version works correctly.
+
+---
+
+## Unsigned Test Builds
+
+Sign only a tracker that is known to work and to be portable. Until then, build an unsigned (ad-hoc) test version, and never release it:
+
+```bash
+GESTURECAP_UNSIGNED_TEST_BUILD=1 .venv/bin/python -m PyInstaller \
+  --clean \
+  --noconfirm \
+  --workpath /private/tmp/gesturecap-test-work \
+  --distpath /private/tmp/gesturecap-test-dist \
+  doublehand_mp.spec
+```
+
+Without this variable, `doublehand_mp.spec` requires a signing identity.
 
 ---
 
@@ -141,7 +159,7 @@ Then run the complete build:
 /private/tmp/gesturecap-release-dist/doublehand_mp/doublehand_mp
 ```
 
-Verify the camera, MediaPipe detection, preview, and OSC output before continuing.
+Verify the camera, MediaPipe detection, and OSC output before continuing.
 
 ---
 

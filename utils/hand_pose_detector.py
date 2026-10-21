@@ -1,6 +1,7 @@
 import cv2
 import sys
 from pathlib import Path
+import utils.no_matplotlib  # must come before mediapipe
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision

@@ -41,7 +41,7 @@ That is all. The complete release already contains the signed and notarized trac
 dist/doublehand_mp/doublehand_mp
 ```
 
-Python is not required on the performance machine, and no tracker folder needs to be moved. The first launch can take approximately 20–30 seconds while MediaPipe, OpenCV, and the packaged runtime load.
+Python is not required on the performance machine, and no tracker folder needs to be moved. The `v0.1.0` tracker can take approximately 20–30 seconds to start. From the next version, the tracker runs as a single process without matplotlib: in our tests on an M1 Max, the first hand arrived about 1 second after launch. The very first launch on a computer stays slower while macOS checks the new files.
 
 This ready-to-run build currently supports macOS Apple Silicon (`arm64`). If you only need the tracker for another Max Project, standalone, or OSC application, use the smaller tracker-only asset described in [Tracker-Only Download and Manual Integration](#tracker-only-download-and-manual-integration).
 
@@ -78,7 +78,7 @@ Default OSC destination:
 127.0.0.1:11111
 ```
 
-The tracker can display its own OpenCV preview while `mediapipe_handdraw.js` renders the landmark data inside Max/MSP.
+The tracker has no window of its own: `mediapipe_handdraw.js` renders the landmark data inside Max/MSP. (The `v0.1.0` tracker still opens an OpenCV preview.)
 
 ### Gesture Routing Matrix
 
@@ -218,9 +218,9 @@ max/GestureCap_Tracker_Test.maxpat
 
 ### 3. Enable the camera/video control
 
-Max launches the packaged tracker. The tracker opens its OpenCV preview and sends MediaPipe landmarks to the visualizer embedded in the Max patch.
+Max launches the packaged tracker. The tracker sends MediaPipe landmarks to the visualizer embedded in the Max patch.
 
-The initial launch can take approximately 20–30 seconds while the packaged runtime, MediaPipe, OpenCV, and supporting resources load.
+With the `v0.1.0` tracker, the initial launch can take approximately 20–30 seconds. Later versions start in a few seconds once macOS has checked the files on the first launch.
 
 ### Tracker paths by integration mode
 

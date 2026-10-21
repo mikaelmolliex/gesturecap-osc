@@ -7,10 +7,27 @@ import os
 # The identity is intentionally not stored in the repository.
 codesign_identity = os.environ.get('GESTURECAP_CODESIGN_IDENTITY')
 
-if not codesign_identity:
+# Test builds stay unsigned (ad-hoc) until the tracker is known to work and
+# to be portable. They must be asked for explicitly and are never released.
+unsigned_test_build = os.environ.get('GESTURECAP_UNSIGNED_TEST_BUILD') == '1'
+
+if not codesign_identity and not unsigned_test_build:
     raise RuntimeError(
-        'GESTURECAP_CODESIGN_IDENTITY must be set for a signed release build.'
+        'GESTURECAP_CODESIGN_IDENTITY must be set for a signed release build '
+        '(or GESTURECAP_UNSIGNED_TEST_BUILD=1 for a local test build).'
     )
+
+# Packages MediaPipe 0.10.14 declares but the tracker never uses.
+# matplotlib is replaced by utils/no_matplotlib.py.
+EXCLUDES = [
+    'matplotlib',
+    'jax',
+    'jaxlib',
+    'scipy',
+    'sounddevice',
+    'PIL',
+    'tkinter',
+]
 
 
 a = Analysis(
@@ -22,7 +39,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=EXCLUDES,
     noarchive=False,
     optimize=0,
 )

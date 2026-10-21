@@ -1,31 +1,33 @@
 """
 doublehand_mp.py
 
-Multiprocess doublehand OSC mapping.
+Single-process doublehand OSC mapping.
 
-Producer: captures frames from webcam into shared double buffer.
-Consumer: detects both hands and streams every landmark over OSC.
+Camera thread: reads frames from the webcam and keeps only the latest one.
+Main thread: detects both hands and streams their landmarks over OSC.
 
-For each detected hand, 63 OSC messages are sent per frame — one per
-axis per MediaPipe joint, each carrying a single float:
+For each detected hand, one OSC message is sent per frame, carrying the
+63 floats of the 21 MediaPipe joints (x, y, z for each joint, in the
+MediaPipe joint order):
 
-    /left_wrist_x            <float>
-    /left_wrist_y            <float>
-    /left_wrist_z            <float>
-    /left_thumb_cmc_x        <float>
-    ...
-    /right_pinky_tip_z       <float>
+    /hand/left    <x0> <y0> <z0> <x1> <y1> <z1> ... <x20> <y20> <z20>
+    /hand/right   ...
 
-x, y are normalized to [0, 1] (image-space); z is depth relative to the
-wrist (smaller = closer to camera).
+x is normalized to [0, 1] (image space), y to [0, 1] with 0 at the bottom,
+z is depth relative to the wrist (larger = closer to the camera).
+
+Everything runs locally: frames never leave this process, and only the
+landmark values are sent, to 127.0.0.1.
 """
 
+import signal
+import sys
+import threading
 import time
-import numpy as np
-import cv2
 
-from multiprocessing import shared_memory, Event, Process, Value
-import multiprocessing as mp
+print(f"MAIN START {time.perf_counter():.3f}", flush=True)
+
+import cv2
 
 from pythonosc import udp_client
 
@@ -33,14 +35,12 @@ from video.webcam_input import WebcamInput
 from utils.hand_pose_detector import HandPoseDetector
 
 
-# ── Frame buffer config ───────────────────────────────────────────────────────
-FRAME_SHAPE = (480, 640, 3)
-FRAME_DTYPE = np.uint8
+# ── Config ────────────────────────────────────────────────────────────────────
+FRAME_WIDTH  = 640
+FRAME_HEIGHT = 480
 
 OSC_IP   = "127.0.0.1"
 OSC_PORT = 11111
-
-SHOW_PREVIEW = True  # set to False to disable the landmark preview window
 
 
 # ==================================================
@@ -52,265 +52,150 @@ SHOW_PREVIEW = True  # set to False to disable the landmark preview window
 FLIP = True
 
 
-# ── MediaPipe hand joint names (index → name) ────────────────────────────────
-# Lowercase MediaPipe HandLandmark enum names — used to build OSC addresses
-# like /left_thumb_tip, /right_index_finger_mcp, etc.
-JOINT_NAMES = [
-    "wrist",
-    "thumb_cmc",        "thumb_mcp",        "thumb_ip",         "thumb_tip",
-    "index_finger_mcp", "index_finger_pip", "index_finger_dip", "index_finger_tip",
-    "middle_finger_mcp","middle_finger_pip","middle_finger_dip","middle_finger_tip",
-    "ring_finger_mcp",  "ring_finger_pip",  "ring_finger_dip",  "ring_finger_tip",
-    "pinky_mcp",        "pinky_pip",        "pinky_dip",        "pinky_tip",
-]
+# ── Camera thread ─────────────────────────────────────────────────────────────
+class LatestFrame:
+    """Holds the most recent camera frame; older frames are dropped."""
 
-_HAND_CONNECTIONS = [
-    (0,1),(1,2),(2,3),(3,4),
-    (0,5),(5,6),(6,7),(7,8),
-    (0,9),(9,10),(10,11),(11,12),
-    (0,13),(13,14),(14,15),(15,16),
-    (0,17),(17,18),(18,19),(19,20),
-    (5,9),(9,13),(13,17),
-]
+    def __init__(self):
+        self._cond = threading.Condition()
+        self._frame = None
+        self._count = 0
+        self.stopped = False
+        self.error = None
 
-_COLORS = {
-    "left":  (2, 150, 225),      # or / ambre
-    "right": (226, 107, 93),     # bleu-violet approché
-}
+    def put(self, frame):
+        with self._cond:
+            self._frame = frame
+            self._count += 1
+            self._cond.notify()
 
+    def stop(self, error=None):
+        with self._cond:
+            self.stopped = True
+            if error is not None and self.error is None:
+                self.error = error
+            self._cond.notify_all()
 
-def draw_hand(frame, landmarks, label):
-    h, w = frame.shape[:2]
-    color = _COLORS.get(label, (255, 255, 255))
-
-    pts = [(int(lm.x * w), int(lm.y * h)) for lm in landmarks]
-
-    for a, b in _HAND_CONNECTIONS:
-        cv2.line(frame, pts[a], pts[b], color, 1, cv2.LINE_AA)
-
-    for i, (x, y) in enumerate(pts):
-        r = 5 if i in (4, 8) else 3   # bigger dot on thumb/index tips
-        cv2.circle(frame, (x, y), r, color, -1, cv2.LINE_AA)
-
-    # Label near wrist
-    cv2.putText(frame, label.upper(), pts[0],
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+    def wait_newer(self, last_count, timeout=1.0):
+        """Return (frame, count) once a frame newer than last_count exists."""
+        with self._cond:
+            self._cond.wait_for(
+                lambda: self._count > last_count or self.stopped, timeout
+            )
+            if self._count > last_count:
+                return self._frame, self._count
+            return None, last_count
 
 
-# ── Producer ──────────────────────────────────────────────────────────────────
-def producer(shm_name0, shm_name1, cur_idx, stop_event, ts_value,
-             t_read_total_v, t_frameacq_v, t_getts_v, t_frameconv_v):
-
-    print(f"PRODUCER START {time.perf_counter():.3f}")
-
-    cam  = WebcamInput(width=FRAME_SHAPE[1], height=FRAME_SHAPE[0])
-    shm0 = shared_memory.SharedMemory(name=shm_name0)
-    shm1 = shared_memory.SharedMemory(name=shm_name1)
-    buf0 = np.ndarray(FRAME_SHAPE, dtype=FRAME_DTYPE, buffer=shm0.buf)
-    buf1 = np.ndarray(FRAME_SHAPE, dtype=FRAME_DTYPE, buffer=shm1.buf)
+def camera_loop(latest):
+    try:
+        cam = WebcamInput(width=FRAME_WIDTH, height=FRAME_HEIGHT)
+    except RuntimeError as error:
+        latest.stop(error)
+        return
 
     try:
-        while not stop_event.is_set():
-            t_start = time.perf_counter()
-            result  = cam.read_frame()
-            t_end   = time.perf_counter()
-
+        while not latest.stopped:
+            result = cam.read_frame()
             if result is None:
-                stop_event.set()
+                latest.stop(RuntimeError("Camera stopped sending frames."))
                 break
 
-            frame, _ts, (t_frameacq, t_getts, t_frameconv) = result
-
-            # Resize if webcam returned unexpected dimensions
-            if frame.shape != tuple(FRAME_SHAPE):
-                frame = cv2.resize(frame, (FRAME_SHAPE[1], FRAME_SHAPE[0]))
-
-            write_idx = 1 - cur_idx.value
-            if write_idx == 0:
-                np.copyto(buf0, frame)
-            else:
-                np.copyto(buf1, frame)
-
-            t_read_total_v.value = t_end - t_start
-            t_frameacq_v.value   = t_frameacq
-            t_getts_v.value      = t_getts
-            t_frameconv_v.value  = t_frameconv
-            ts_value.value       = t_end
-            cur_idx.value        = write_idx
-
-    except KeyboardInterrupt:
-        print("PRODUCER: KeyboardInterrupt")
+            frame = result[0]
+            if frame.shape[:2] != (FRAME_HEIGHT, FRAME_WIDTH):
+                frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
+            latest.put(frame)
     finally:
         cam.cleanup()
-        shm0.close()
-        shm1.close()
-        print("PRODUCER EXITS GRACEFULLY")
-
-
-# ── Consumer ──────────────────────────────────────────────────────────────────
-def consumer(shm_name0, shm_name1, cur_idx, stop_event, ts_value,
-             t_read_total_v, t_frameacq_v, t_getts_v, t_frameconv_v):
-
-    print(f"CONSUMER START {time.perf_counter():.3f}")
-
-    client = udp_client.SimpleUDPClient(OSC_IP, OSC_PORT)
-
-    print("CREATING HANDPOSEDETECTOR")
-
-    t0 = time.perf_counter()
-
-    detector = HandPoseDetector(n_hands=2, device="cpu")
-
-    print(
-        f"HANDPOSEDETECTOR READY IN {(time.perf_counter() - t0) * 1000:.0f} ms"
-    )
-
-    print("HandPoseDetector initialisé (CPU)")
-
-    shm0 = shared_memory.SharedMemory(name=shm_name0)
-    shm1 = shared_memory.SharedMemory(name=shm_name1)
-
-    buf0 = np.ndarray(FRAME_SHAPE, dtype=FRAME_DTYPE, buffer=shm0.buf)
-    buf1 = np.ndarray(FRAME_SHAPE, dtype=FRAME_DTYPE, buffer=shm1.buf)
-
-    time.sleep(0.5)  # warm-up
-
-    print("CONSUMER: streaming hand landmarks over OSC — press Ctrl+C to stop.")
-
-    try:
-        while not stop_event.is_set():
-            read_idx = cur_idx.value
-            frame = buf0.copy() if read_idx == 0 else buf1.copy()
-
-            # ==================================================
-            # MIKAEL MODIFICATION
-            # Apply horizontal flip if enabled
-            # Set FLIP = True to mirror the camera (like webcam apps)
-            if FLIP:
-                frame = cv2.flip(frame, 1)
-
-
-            hands = detector.detect_hand_pose(frame)
-
-            if hands:
-                for hand in hands:
-                    raw_label = hand.get("label", "").lower()
-
-                    # ==================================================
-                    # MIKAEL MODIFICATION
-                    # Adjust hand labels when camera is mirrored (FLIP)
-                    # This ensures OSC output matches user perspective
-                    # ==================================================
-                    if FLIP:
-                        label = "right" if raw_label == "left" else "left"
-                    else:
-                        label = raw_label
-
-                    if label not in ("left", "right"):
-                        continue
-
-                    landmarks = hand["landmarks"].landmark
-                    values = []
-
-                    # ==================================================
-                    # MIKAEL MODIFICATION
-                    for lm in landmarks:
-                        # horizontal axis
-                        x = lm.x
-
-                        # vertical axis
-                        y = 1 - lm.y
-                        # 0 = bottom, 1 = top
-
-                        # depth (unchanged for now)
-                        z = -lm.z  # invert depth for more intuitive positive range
-
-                        values.extend([x, y, z])
-
-                    client.send_message(f"/hand/{label}", values)
-
-            if SHOW_PREVIEW:
-                preview = np.zeros_like(frame)
-
-                if hands:
-                    for hand in hands:
-                        label = hand.get("label", "").lower()
-
-                        if FLIP:
-                            if label == "left":
-                                label = "right"
-                            elif label == "right":
-                                label = "left"
-
-                        if label:
-                            draw_hand(
-                                preview,
-                                hand["landmarks"].landmark,
-                                label
-                            )
-
-                cv2.imshow("doublehand_mp", preview)
-
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    stop_event.set()
-                    break
-
-    except KeyboardInterrupt:
-        print("CONSUMER: KeyboardInterrupt")
-    finally:
-        stop_event.set()
-        if SHOW_PREVIEW:
-            cv2.destroyAllWindows()
-        shm0.close()
-        shm1.close()
-        print("CONSUMER EXITS GRACEFULLY")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+def main():
+    latest = LatestFrame()
+
+    # Max stops the tracker with SIGTERM: leave the loop and release the camera
+    def request_stop(signum, _frame):
+        latest.stop()
+
+    signal.signal(signal.SIGTERM, request_stop)
+    signal.signal(signal.SIGINT, request_stop)
+
+    # The camera opens while the detector loads
+    camera = threading.Thread(target=camera_loop, args=(latest,), daemon=True)
+    camera.start()
+
+    client = udp_client.SimpleUDPClient(OSC_IP, OSC_PORT)
+
+    print("CREATING HANDPOSEDETECTOR", flush=True)
+    t0 = time.perf_counter()
+    detector = HandPoseDetector(n_hands=2, device="cpu")
+    print(
+        f"HANDPOSEDETECTOR READY IN {(time.perf_counter() - t0) * 1000:.0f} ms",
+        flush=True,
+    )
+
+    print("Streaming hand landmarks over OSC — press Ctrl+C to stop.", flush=True)
+
+    last_count = 0
+    while not latest.stopped:
+        frame, last_count = latest.wait_newer(last_count)
+        if frame is None:
+            continue
+
+        # ==================================================
+        # MIKAEL MODIFICATION
+        # Apply horizontal flip if enabled
+        # Set FLIP = True to mirror the camera (like webcam apps)
+        if FLIP:
+            frame = cv2.flip(frame, 1)
+
+        hands = detector.detect_hand_pose(frame)
+
+        for hand in hands:
+            raw_label = hand.get("label", "").lower()
+
+            # ==================================================
+            # MIKAEL MODIFICATION
+            # Adjust hand labels when camera is mirrored (FLIP)
+            # This ensures OSC output matches user perspective
+            # ==================================================
+            if FLIP:
+                label = "right" if raw_label == "left" else "left"
+            else:
+                label = raw_label
+
+            if label not in ("left", "right"):
+                continue
+
+            values = []
+
+            # ==================================================
+            # MIKAEL MODIFICATION
+            for lm in hand["landmarks"].landmark:
+                # horizontal axis
+                x = lm.x
+
+                # vertical axis
+                y = 1 - lm.y
+                # 0 = bottom, 1 = top
+
+                # depth
+                z = -lm.z  # invert depth for more intuitive positive range
+
+                values.extend([x, y, z])
+
+            client.send_message(f"/hand/{label}", values)
+
+    camera.join(timeout=2.0)
+
+    if latest.error is not None:
+        print(f"ERROR: {latest.error}", flush=True)
+        print("MAIN EXIT", flush=True)
+        return 1
+
+    print("MAIN EXIT", flush=True)
+    return 0
+
+
 if __name__ == "__main__":
-
-    print(f"MAIN START {time.perf_counter():.3f}")
-
-    mp.freeze_support()
-    mp.set_start_method("spawn", force=True)
-
-    size = int(np.prod(FRAME_SHAPE) * np.dtype(FRAME_DTYPE).itemsize)
-    shm0 = shared_memory.SharedMemory(create=True, size=size)
-    shm1 = shared_memory.SharedMemory(create=True, size=size)
-
-    cur_idx      = Value("i", 0)
-    ts           = Value("d", 0.0)
-    stop_event   = Event()
-    t_read_total = Value("d", 0.0)
-    t_frameacq   = Value("d", 0.0)
-    t_getts      = Value("d", 0.0)
-    t_frameconv  = Value("d", 0.0)
-
-    shared_args = (shm0.name, shm1.name,
-                   cur_idx, stop_event, ts,
-                   t_read_total, t_frameacq, t_getts, t_frameconv)
-
-    p1 = Process(target=producer, args=shared_args)
-    p2 = Process(target=consumer, args=shared_args)
-
-    p1.start()
-    p2.start()
-
-    try:
-        while p1.is_alive():
-            p1.join(timeout=0.5)
-    except KeyboardInterrupt:
-        stop_event.set()
-    finally:
-        stop_event.set()
-        p1.join(timeout=2.0)
-        p2.join(timeout=2.0)
-
-        for shm in (shm0, shm1):
-            try:
-                shm.close()
-                shm.unlink()
-            except Exception:
-                pass
-
-        print("MAIN EXIT")
+    sys.exit(main())
