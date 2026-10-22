@@ -40,7 +40,7 @@ Displays raw input and processes calibration, inversion, exponent, playable rang
 
 ## Tracker Launchers
 
-### Universal launcher (recommended)
+### Universal launcher
 
 ```text
 max/run_mediapipe.js
@@ -63,7 +63,18 @@ The Max console shows the path it found, or every place it searched.
 | `where` | prints the tracker path in the Max console |
 | `trackerpath <path>` | sets the tracker path by hand; `trackerpath` alone returns to the automatic search |
 
-Its outlet sends `status starting`, `status running`, `status stopped`, `status not_found` or `status error`.
+Its outlet sends `status <step>`. Connect it to the hand view (`mediapipe_handdraw.js`, the same inlet as the hand data), which then shows what is happening instead of a spinner:
+
+| Status | Shown in the hand view |
+| --- | --- |
+| `starting`, `loading`, `model`, `camera` | The start-up steps, one line each: Starting the hand tracker, Loading MediaPipe, Loading the hand model, Opening the camera |
+| `ready` | Camera ready. Show your hands to the camera. |
+| `stopped` | Camera off. Turn the camera on to start. |
+| `not_found` | Tracker not found |
+| `camera_denied` | Camera not available, with the System Settings path |
+| `stopped_unexpectedly`, `error` | The tracker stopped / could not start: see the Max console |
+
+When no hand has been seen for 1.5 seconds, the view reminds the user to show their hands.
 
 **The tracker never runs without Max.** `camera_off` stops it, closing the patch or quitting Max stops it, and if Max crashes or is force-quit, the tracker notices that Max is gone and stops by itself within about a second, releasing the camera ([utils/parent_watch.py](../utils/parent_watch.py)).
 
@@ -81,43 +92,7 @@ MyWork/
         └── _internal/
 ```
 
-In a standalone application, put the tracker in `Contents/Resources/tracker/` (see below): it is not affected by the project's organisation.
-
-### Earlier launchers
-
-The three earlier launcher scripts are kept for now:
-
-| Script | Context |
-| --- | --- |
-| `run_mediapipe_maxmsp.js` | regular Max patch |
-| `run_mediapipe_maxmsp_project.js` | Max Project |
-| `run_mediapipe_standalone.js` | Max standalone application |
-
-Use the launcher that matches the environment containing the patch. The routing and interface logic remains the same in all three contexts.
-
-The tracker is distributed separately through the [latest GitHub Release](https://github.com/mikaelmolliex/gesturecap-osc/releases/latest). The current macOS Apple Silicon asset is signed with a Developer ID and notarized by Apple. Keep the complete `doublehand_mp/` directory, including `_internal/`.
-
-### Regular Max patch
-
-```text
-gesturecap-osc/
-├── dist/
-│   └── doublehand_mp/
-│       ├── doublehand_mp
-│       └── _internal/
-└── max/
-    └── run_mediapipe_maxmsp.js
-```
-
-The launcher expects `dist/doublehand_mp/doublehand_mp` relative to the repository root.
-
-### Max Project
-
-`run_mediapipe_maxmsp_project.js` resolves a `tracker/doublehand_mp/` directory relative to the project launcher. Confirm the resolved location after reorganizing a Max Project.
-
-### Max standalone
-
-The expected bundle structure is:
+In a standalone application, put the tracker inside the application bundle, where the project's organisation does not affect it:
 
 ```text
 YourApp.app/
@@ -128,8 +103,6 @@ YourApp.app/
                 ├── doublehand_mp
                 └── _internal/
 ```
-
-The provided `run_mediapipe_standalone.js` currently contains `DriftMap.app` as an example application name. Replace it with the actual standalone name or change `TRACKER_PATH` to match the final bundle.
 
 Embedding the signed tracker is not sufficient for public distribution. The surrounding `.app` must be signed with its required entitlements, and the final ZIP, DMG, or installer must be notarized separately. See [macOS Camera Permissions](macos-camera-permissions.md).
 

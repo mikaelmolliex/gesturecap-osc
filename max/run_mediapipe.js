@@ -18,7 +18,9 @@
 //     └── tracker/doublehand_mp/
 //
 // Messages:  camera_on, camera_off, trackerpath <path>, where
-// Outlet:    status starting | running | stopped | not_found | error
+// Outlet:    status <step>, for the display in mediapipe_handdraw.js:
+//              starting  -> loading -> model -> camera -> ready
+//              stopped, not_found, camera_denied, stopped_unexpectedly, error
 //
 // The tracker never outlives Max: camera_off stops it, quitting Max stops it,
 // and the tracker also stops by itself if Max or this script disappears
@@ -36,6 +38,20 @@ const CANDIDATES = [
 ];
 const MAX_LEVELS_UP = 4;
 const KILL_AFTER_MS = 3000;
+
+// Tracker output lines that mark each step of the start-up
+const STEPS = [
+    [/^MAIN START/, "loading"],
+    [/^CREATING HANDPOSEDETECTOR/, "model"],
+    [/^Streaming hand landmarks/, "camera"],
+    [/^TRACKER READY/, "ready"],
+];
+const CAMERA_FAILURE = [
+    /not authorized to capture video/i,
+    /camera failed to properly initialize/i,
+    /could not open webcam/i,
+    /failed list devices.*avfoundation/i,
+];
 
 let tracker = null;
 let manualPath = null;
@@ -138,22 +154,43 @@ function startTracker() {
     });
     tracker = child;
 
-    const onOutput = (data) => {
-        data.toString().split("\n").forEach((line) => {
-            if (!line.trim()) {
-                return;
+    let cameraFailed = false;
+    let launchFailed = false;
+
+    const onLine = (line) => {
+        if (!line.trim()) {
+            return;
+        }
+        Max.post(line);
+        if (tracker !== child) {
+            return;
+        }
+        for (const [pattern, step] of STEPS) {
+            if (pattern.test(line)) {
+                Max.outlet("status", step);
             }
-            Max.post(line);
-            if (tracker === child && line.startsWith("Streaming hand landmarks")) {
-                Max.outlet("status", "running");
-            }
-        });
+        }
+        if (!cameraFailed && CAMERA_FAILURE.some((pattern) => pattern.test(line))) {
+            cameraFailed = true;
+            Max.outlet("status", "camera_denied");
+        }
     };
-    child.stdout.on("data", onOutput);
-    child.stderr.on("data", onOutput);
+
+    // Data can arrive in pieces: only handle complete lines
+    const lineReader = () => {
+        let pending = "";
+        return (data) => {
+            const parts = (pending + data.toString()).split("\n");
+            pending = parts.pop();
+            parts.forEach(onLine);
+        };
+    };
+    child.stdout.on("data", lineReader());
+    child.stderr.on("data", lineReader());
 
     child.on("error", (error) => {
         Max.post("Tracker error: " + error.message);
+        launchFailed = true;
         if (tracker === child) {
             tracker = null;
             Max.outlet("status", "error");
@@ -162,8 +199,16 @@ function startTracker() {
 
     child.on("close", (code, signal) => {
         Max.post("Tracker stopped (" + (signal ? "signal " + signal : "exit code " + code) + ").");
+        if (launchFailed) {
+            return;
+        }
         if (tracker === child) {
+            // Nobody asked it to stop
             tracker = null;
+            if (!cameraFailed) {
+                Max.outlet("status", "stopped_unexpectedly");
+            }
+            return;
         }
         Max.outlet("status", "stopped");
     });

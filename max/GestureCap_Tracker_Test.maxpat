@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 331.0, 109.0, 956.0, 775.0 ],
+        "rect": [ 331.0, 109.0, 649.0, 775.0 ],
         "openinpresentation": 1,
         "boxes": [
             {
@@ -2556,7 +2556,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2579,7 +2579,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2602,7 +2602,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2625,7 +2625,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2648,7 +2648,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2671,7 +2671,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2694,7 +2694,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2717,7 +2717,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2740,7 +2740,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2763,7 +2763,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2786,7 +2786,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -2831,7 +2831,7 @@
                                                     "lockedsize": 0,
                                                     "maxclass": "bpatcher",
                                                     "name": "custom-dials-params.maxpat",
-                                                    "numinlets": 1,
+                                                    "numinlets": 2,
                                                     "numoutlets": 3,
                                                     "offset": [ 0.0, 0.0 ],
                                                     "outlettype": [ "", "int", "" ],
@@ -4991,7 +4991,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 789.0, 95.0, 951.0, 853.0 ],
+                        "rect": [ 527.0, 95.0, 951.0, 853.0 ],
                         "openinpresentation": 1,
                         "boxes": [
                             {
@@ -5110,7 +5110,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 1500.0000357627869, 505.71429777145386, 76.0, 22.0 ],
+                    "patching_rect": [ 1462.857177734375, 506.25, 76.0, 22.0 ],
                     "text": "open"
                 }
             },
@@ -5121,37 +5121,8 @@
                     "numinlets": 1,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 1500.0000357627869, 540.0000128746033, 76.0, 22.0 ],
+                    "patching_rect": [ 1462.857177734375, 540.625, 76.0, 22.0 ],
                     "text": "pcontrol"
-                }
-            },
-            {
-                "box": {
-                    "id": "obj-44",
-                    "maxclass": "newobj",
-                    "numinlets": 2,
-                    "numoutlets": 1,
-                    "outlettype": [ "int" ],
-                    "patching_rect": [ 902.272718667984, 300.0, 29.5, 22.0 ],
-                    "text": "+ 1"
-                }
-            },
-            {
-                "box": {
-                    "bubble": 1,
-                    "bubble_bgcolor": [ 0.87841796875, 0.8784179091453552, 0.87841796875, 0.57 ],
-                    "bubble_outlinecolor": [ 0.05098036676645279, 0.05098036676645279, 0.05098036676645279, 1.0 ],
-                    "bubbleside": 0,
-                    "bubbletextmargin": 6,
-                    "fontsize": 12.0,
-                    "id": "obj-32",
-                    "maxclass": "comment",
-                    "numinlets": 1,
-                    "numoutlets": 0,
-                    "patching_rect": [ 626.9841367006302, 651.1969661712646, 248.14816796779633, 41.0 ],
-                    "text": "Script for Max Project",
-                    "textcolor": [ 0.290283203125, 0.290283203125, 0.290283203125, 1.0 ],
-                    "textjustification": 1
                 }
             },
             {
@@ -5161,15 +5132,17 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
-                    "patching_rect": [ 622.2222318649292, 613.1017274856567, 257.0, 22.0 ],
+                    "patching_rect": [ 990.9090814590454, 432.40908670425415, 162.0, 22.0 ],
                     "saved_object_attributes": {
                         "autostart": 0,
                         "defer": 0,
+                        "node_bin_path": "",
+                        "npm_bin_path": "",
                         "watch": 0
                     },
-                    "text": "node.script run_mediapipe_maxmsp_project.js",
+                    "text": "node.script run_mediapipe.js",
                     "textfile": {
-                        "filename": "run_mediapipe_maxmsp_project.js",
+                        "filename": "run_mediapipe.js",
                         "flags": 0,
                         "embed": 0,
                         "autowatch": 1
@@ -31568,25 +31541,6 @@
                     "bubbleside": 3,
                     "bubbletextmargin": 6,
                     "fontsize": 12.0,
-                    "id": "obj-21",
-                    "linecount": 5,
-                    "maxclass": "comment",
-                    "numinlets": 1,
-                    "numoutlets": 0,
-                    "patching_rect": [ 675.0, 308.5454514026642, 219.0, 80.0 ],
-                    "text": "Tracker Launch Mode\n\n0 = Development (Repository)\n1 = Standalone (Application Bundle)\n2 = MaxProject",
-                    "textcolor": [ 0.11372549019607843, 0.11372549019607843, 0.11372549019607843, 1.0 ],
-                    "textjustification": 1
-                }
-            },
-            {
-                "box": {
-                    "bubble": 1,
-                    "bubble_bgcolor": [ 0.87841796875, 0.8784179091453552, 0.87841796875, 0.57 ],
-                    "bubble_outlinecolor": [ 0.0196078431372549, 0.0196078431372549, 0.0196078431372549, 1.0 ],
-                    "bubbleside": 3,
-                    "bubbletextmargin": 6,
-                    "fontsize": 12.0,
                     "id": "obj-5",
                     "linecount": 4,
                     "maxclass": "comment",
@@ -31622,7 +31576,7 @@
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 1493.023202419281, 907.7099279165268, 358.0, 262.0 ],
+                    "patching_rect": [ 1462.3188527822495, 904.3478336334229, 442.02898919582367, 262.0 ],
                     "text": "Live Hand Visualizer\n\nPlease be patient.\nThe preview window may take approximately 30 seconds to open.\n",
                     "textcolor": [ 0.0, 0.0, 0.0, 1.0 ],
                     "textjustification": 1
@@ -31637,12 +31591,12 @@
                     "bubbletextmargin": 6,
                     "fontsize": 12.0,
                     "id": "obj-20",
-                    "linecount": 7,
+                    "linecount": 3,
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 195.22727148478702, 22.0, 768.181811, 121.0 ],
-                    "text": "GestureCap Tracker Test\n\nThis patch demonstrates how to launch and control the MediaPipe tracker from Max/MSP.\n\nUse Development mode when running from the GestureCap repository.\n\nUse Standalone mode when running from a compiled Collective or Application.",
+                    "patching_rect": [ 195.22727148478702, 76.0, 768.181811, 68.0 ],
+                    "text": "GestureCap Tracker Test\n\nThis patch demonstrates how to launch and control the MediaPipe tracker from Max/MSP.",
                     "textcolor": [ 0.290283203125, 0.290283203125, 0.290283203125, 1.0 ],
                     "textjustification": 1
                 }
@@ -31664,28 +31618,6 @@
                     "text": "available devices and device formats",
                     "textcolor": [ 0.11372549019607843, 0.11372549019607843, 0.11372549019607843, 1.0 ],
                     "textjustification": 1
-                }
-            },
-            {
-                "box": {
-                    "id": "obj-9",
-                    "maxclass": "toggle",
-                    "numinlets": 1,
-                    "numoutlets": 1,
-                    "outlettype": [ "int" ],
-                    "parameter_enable": 0,
-                    "patching_rect": [ 902.272718667984, 329.5454514026642, 24.0, 24.0 ]
-                }
-            },
-            {
-                "box": {
-                    "id": "obj-6",
-                    "maxclass": "newobj",
-                    "numinlets": 2,
-                    "numoutlets": 3,
-                    "outlettype": [ "", "", "" ],
-                    "patching_rect": [ 902.0, 506.818176984787, 188.0, 22.0 ],
-                    "text": "gate 3"
                 }
             },
             {
@@ -32018,66 +31950,6 @@
             },
             {
                 "box": {
-                    "id": "obj-152",
-                    "maxclass": "newobj",
-                    "numinlets": 1,
-                    "numoutlets": 2,
-                    "outlettype": [ "", "" ],
-                    "patching_rect": [ 1136.3636255264282, 606.8181760311127, 227.0, 22.0 ],
-                    "saved_object_attributes": {
-                        "autostart": 0,
-                        "defer": 0,
-                        "watch": 0
-                    },
-                    "text": "node.script run_mediapipe_standalone.js",
-                    "textfile": {
-                        "filename": "run_mediapipe_standalone.js",
-                        "flags": 0,
-                        "embed": 0,
-                        "autowatch": 1
-                    }
-                }
-            },
-            {
-                "box": {
-                    "bubble": 1,
-                    "bubble_bgcolor": [ 0.87841796875, 0.8784179091453552, 0.87841796875, 0.57 ],
-                    "bubble_outlinecolor": [ 0.05098036676645279, 0.05098036676645279, 0.05098036676645279, 1.0 ],
-                    "bubbleside": 0,
-                    "bubbletextmargin": 6,
-                    "fontsize": 12.0,
-                    "id": "obj-150",
-                    "linecount": 13,
-                    "maxclass": "comment",
-                    "numinlets": 1,
-                    "numoutlets": 0,
-                    "patching_rect": [ 909.0909004211426, 636.3636302947998, 193.0, 202.0 ],
-                    "text": "Development Script (Max Patch)\n\nThis script launches the PyInstaller-packaged tracker directly from the GestureCap repository.\n\nUse this version while developing and testing inside Max.\n\nThe tracker executable must be available in the repository folder specified in TRACKER_PATH.",
-                    "textcolor": [ 0.290283203125, 0.290283203125, 0.290283203125, 1.0 ],
-                    "textjustification": 1
-                }
-            },
-            {
-                "box": {
-                    "bubble": 1,
-                    "bubble_bgcolor": [ 0.87841796875, 0.8784179091453552, 0.87841796875, 0.57 ],
-                    "bubble_outlinecolor": [ 0.05098036676645279, 0.05098036676645279, 0.05098036676645279, 1.0 ],
-                    "bubbleside": 0,
-                    "bubbletextmargin": 6,
-                    "fontsize": 12.0,
-                    "id": "obj-138",
-                    "linecount": 27,
-                    "maxclass": "comment",
-                    "numinlets": 1,
-                    "numoutlets": 0,
-                    "patching_rect": [ 1131.1136300563812, 636.3636302947998, 237.499990940094, 389.0 ],
-                    "text": "Standalone Script\n\nThis script launches the PyInstaller-packaged tracker from a macOS standalone application.\n\nBefore running:\n\n1. Build a Collective or Standalone Application from the Max project.\n2. Copy the complete tracker folder into the application bundle.\n\nTo access the application bundle:\n\n1. Right-click on YourApp.app\n2. Select \"Show Package Contents\"\n3. Open: Contents → Resources\n4. Copy the tracker folder into Resources\n\nExpected structure:\n\nYourApp.app\n└── Contents\n    └── Resources\n        └── tracker\n                              └── doublehand_mp",
-                    "textcolor": [ 0.290283203125, 0.290283203125, 0.290283203125, 1.0 ],
-                    "textjustification": 1
-                }
-            },
-            {
-                "box": {
                     "bubble_outlinecolor": [ 0.0196078431372549, 0.0196078431372549, 0.0196078431372549, 1.0 ],
                     "id": "obj-229",
                     "maxclass": "comment",
@@ -32345,28 +32217,6 @@
                     "outlettype": [ "" ],
                     "patching_rect": [ 990.9090814590454, 329.5454514026642, 66.0, 22.0 ],
                     "text": "script start"
-                }
-            },
-            {
-                "box": {
-                    "id": "obj-34",
-                    "maxclass": "newobj",
-                    "numinlets": 1,
-                    "numoutlets": 2,
-                    "outlettype": [ "", "" ],
-                    "patching_rect": [ 902.272718667984, 606.8181760311127, 214.0, 22.0 ],
-                    "saved_object_attributes": {
-                        "autostart": 0,
-                        "defer": 0,
-                        "watch": 0
-                    },
-                    "text": "node.script run_mediapipe_maxmsp.js",
-                    "textfile": {
-                        "filename": "run_mediapipe_maxmsp.js",
-                        "flags": 0,
-                        "embed": 0,
-                        "autowatch": 1
-                    }
                 }
             },
             {
@@ -34966,16 +34816,6 @@
                 "patchline": {
                     "color": [ 1.0, 0.4117647059, 0.01568627451, 1.0 ],
                     "destination": [ "obj-200", 0 ],
-                    "order": 1,
-                    "source": [ "obj-1", 0 ]
-                }
-            },
-            {
-                "patchline": {
-                    "color": [ 1.0, 0.4117647059, 0.01568627451, 1.0 ],
-                    "destination": [ "obj-44", 0 ],
-                    "midpoints": [ 86.77272653579712, 274.9018361722119, 911.772718667984, 274.9018361722119 ],
-                    "order": 0,
                     "source": [ "obj-1", 0 ]
                 }
             },
@@ -35029,7 +34869,7 @@
             },
             {
                 "patchline": {
-                    "destination": [ "obj-6", 1 ],
+                    "destination": [ "obj-43", 0 ],
                     "source": [ "obj-18", 0 ]
                 }
             },
@@ -35041,7 +34881,7 @@
             },
             {
                 "patchline": {
-                    "destination": [ "obj-6", 1 ],
+                    "destination": [ "obj-43", 0 ],
                     "source": [ "obj-19", 0 ]
                 }
             },
@@ -35131,7 +34971,7 @@
             },
             {
                 "patchline": {
-                    "destination": [ "obj-6", 1 ],
+                    "destination": [ "obj-43", 0 ],
                     "source": [ "obj-22", 0 ]
                 }
             },
@@ -35223,7 +35063,7 @@
             },
             {
                 "patchline": {
-                    "destination": [ "obj-6", 1 ],
+                    "destination": [ "obj-43", 0 ],
                     "source": [ "obj-31", 0 ]
                 }
             },
@@ -35298,9 +35138,9 @@
             },
             {
                 "patchline": {
-                    "color": [ 1.0, 0.4117647059, 0.01568627451, 1.0 ],
-                    "destination": [ "obj-9", 0 ],
-                    "source": [ "obj-44", 0 ]
+                    "destination": [ "obj-66", 1 ],
+                    "midpoints": [ 1000.4090814590454, 466.14864206314087, 1895.0238275527954, 466.14864206314087 ],
+                    "source": [ "obj-43", 0 ]
                 }
             },
             {
@@ -35332,24 +35172,6 @@
                 "patchline": {
                     "destination": [ "obj-15", 0 ],
                     "source": [ "obj-58", 0 ]
-                }
-            },
-            {
-                "patchline": {
-                    "destination": [ "obj-152", 0 ],
-                    "source": [ "obj-6", 1 ]
-                }
-            },
-            {
-                "patchline": {
-                    "destination": [ "obj-34", 0 ],
-                    "source": [ "obj-6", 0 ]
-                }
-            },
-            {
-                "patchline": {
-                    "destination": [ "obj-43", 0 ],
-                    "source": [ "obj-6", 2 ]
                 }
             },
             {
@@ -35412,12 +35234,6 @@
                 "patchline": {
                     "destination": [ "obj-16", 0 ],
                     "source": [ "obj-8", 0 ]
-                }
-            },
-            {
-                "patchline": {
-                    "destination": [ "obj-6", 0 ],
-                    "source": [ "obj-9", 0 ]
                 }
             }
         ],
@@ -35607,6 +35423,14 @@
             "obj-49::obj-690::obj-9::obj-862": [ "live.numbox[45]", "live.numbox[37]", 0 ],
             "obj-49::obj-690::obj-9::obj-9": [ "live.numbox[39]", "live.numbox[37]", 0 ],
             "obj-49::obj-983": [ "live.text[143]", "live.text[30]", 0 ],
+            "parameterbanks": {
+                "0": {
+                    "index": 0,
+                    "name": "",
+                    "parameters": [ "-", "-", "-", "-", "-", "-", "-", "-" ],
+                    "buttons": [ "-", "-", "-", "-", "-", "-", "-", "-" ]
+                }
+            },
             "parameter_overrides": {
                 "obj-49::obj-65": {
                     "parameter_longname": "live.text[72]"

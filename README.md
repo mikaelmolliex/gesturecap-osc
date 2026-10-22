@@ -200,7 +200,7 @@ gesturecap-osc/
 │       └── _internal/
 └── max/
     ├── GestureCap_Tracker_Test.maxpat
-    ├── run_mediapipe_maxmsp.js
+    ├── run_mediapipe.js
     ├── mediapipe_handdraw.js
     ├── gesture_mapper_ui_multimode_extended.js
     └── custom.dial.v9.js
@@ -224,122 +224,21 @@ With the `v0.1.0` tracker, the initial launch can take approximately 20–30 sec
 
 ### Tracker paths by integration mode
 
-**Recommended:** the universal launcher [`max/run_mediapipe.js`](max/run_mediapipe.js) finds the tracker by itself in a regular patch, a Max Project or a standalone application, and makes sure the tracker never keeps running without Max. In a Max Project, keep `tracker/` beside the project folder, never inside it. See [Max/MSP Integration](docs/max-integration.md#universal-launcher-recommended).
+One launcher, [`max/run_mediapipe.js`](max/run_mediapipe.js), works in a regular patch, a Max Project and a standalone application. It finds the tracker by itself, going up at most four folders from the launcher and looking for `tracker/doublehand_mp/` or `dist/doublehand_mp/`, then inside `YourApp.app/Contents/Resources/tracker/`. The Max console shows the path it found, or every place it searched.
 
-The earlier launchers below are kept for now.
+| Context | Where to put the tracker |
+| --- | --- |
+| This repository (regular patch) | `dist/doublehand_mp/` or `tracker/doublehand_mp/` at the repository root |
+| Max Project | `tracker/doublehand_mp/` **beside** the project folder, never inside it: a Max Project moves every file inside its folder into its own subfolders, which breaks the tracker |
+| Standalone application | `YourApp.app/Contents/Resources/tracker/doublehand_mp/` |
 
-The tracker location depends on how GestureCap OSC is being used. The three launcher scripts intentionally use different paths for the standard repository, a Max Project, and a standalone application.
-
-#### Ready-to-run repository
-
-No files need to be moved when using the complete release.
-
-[`max/run_mediapipe_maxmsp.js`](max/run_mediapipe_maxmsp.js) resolves the tracker relative to the launcher script:
-
-```javascript
-const TRACKER_PATH = path.join(
-    __dirname,
-    "..",
-    "dist",
-    "doublehand_mp",
-    "doublehand_mp"
-);
-```
-
-The executable must exist at:
-
-```text
-dist/doublehand_mp/doublehand_mp
-```
-
-The expected structure is:
-
-```text
-gesturecap-osc/
-├── dist/
-│   └── doublehand_mp/
-│       ├── doublehand_mp
-│       └── _internal/
-└── max/
-    └── run_mediapipe_maxmsp.js
-```
-
-#### Max Project integration
-
-[`max/run_mediapipe_maxmsp_project.js`](max/run_mediapipe_maxmsp_project.js) is intended for a tracker embedded in a Max Project.
-
-For this integration, copy the complete `doublehand_mp/` folder from `dist/` into the Max Project’s `tracker/` directory:
-
-```text
-tracker/
-└── doublehand_mp/
-    ├── doublehand_mp
-    └── _internal/
-```
-
-The launcher resolves this location relative to its position inside the Max Project:
-
-```javascript
-const TRACKER_PATH = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "tracker",
-    "doublehand_mp",
-    "doublehand_mp"
-);
-```
-
-The relative path assumes the launcher remains in the directory structure expected by the Max Project. If the launcher is moved to another location, update the `TRACKER_PATH` block accordingly.
-
-#### Standalone application integration
-
-[`max/run_mediapipe_standalone.js`](max/run_mediapipe_standalone.js) is intended for a tracker embedded inside a standalone Max application.
-
-The tracker is placed inside the application bundle:
-
-```text
-YourApp.app/
-└── Contents/
-    └── Resources/
-        └── tracker/
-            └── doublehand_mp/
-                ├── doublehand_mp
-                └── _internal/
-```
-
-The supplied standalone launcher currently uses this example path:
-
-```text
-/Applications/YourApp.app/Contents/Resources/tracker/doublehand_mp/doublehand_mp
-```
-
-This path is specific to `YourApp.app`. When integrating the tracker into another standalone application, update the application name or complete bundle path in:
-
-```text
-max/run_mediapipe_standalone.js
-```
-
-For example:
-
-```javascript
-const TRACKER_PATH = path.join(
-    "/Applications",
-    "YourApp.app",
-    "Contents",
-    "Resources",
-    "tracker",
-    "doublehand_mp",
-    "doublehand_mp"
-);
-```
+The tracker never keeps running without Max: turning the camera off, closing the patch or quitting Max stops it, and if Max crashes, the tracker stops by itself within about a second.
 
 In every integration mode, keep the complete `_internal/` directory beside the `doublehand_mp` executable.
 
 Embedding the signed tracker does not automatically sign or notarize the surrounding standalone application. The complete `.app` and its final distribution archive must be signed and notarized separately before public distribution.
 
-See [Max/MSP Integration](docs/max-integration.md) for the regular patch, Max Project, and standalone launchers.
+See [Max/MSP Integration](docs/max-integration.md#universal-launcher) for the launcher's messages and the start-up messages shown in the patch.
 
 ---
 
@@ -379,10 +278,7 @@ max/mediapipe_handdraw.js                Landmark visualizer
 max/gesture_mapper_ui_multimode_extended.js
                                          Gesture routing matrix
 max/custom.dial.v9.js                    Custom parameter dial
-max/run_mediapipe.js                     Universal launcher (patch, Max Project, standalone)
-max/run_mediapipe_maxmsp.js              Regular Max patch launcher
-max/run_mediapipe_maxmsp_project.js      Max Project launcher
-max/run_mediapipe_standalone.js          Standalone application launcher
+max/run_mediapipe.js                     Tracker launcher (patch, Max Project, standalone)
 ```
 
 ---

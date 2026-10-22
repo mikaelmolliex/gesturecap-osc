@@ -151,6 +151,7 @@ def main():
     print("Streaming hand landmarks over OSC — press Ctrl+C to stop.", flush=True)
 
     last_count = 0
+    ready_announced = False
     while not latest.stopped:
         frame, last_count = latest.wait_newer(last_count)
         if frame is None:
@@ -164,6 +165,11 @@ def main():
             frame = cv2.flip(frame, 1)
 
         hands = detector.detect_hand_pose(frame)
+
+        # The launcher waits for this line to tell the user to show their hands
+        if not ready_announced:
+            print("TRACKER READY: camera on, show your hands.", flush=True)
+            ready_announced = True
 
         for hand in hands:
             raw_label = hand.get("label", "").lower()
