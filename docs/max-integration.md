@@ -18,7 +18,16 @@ It connects the MediaPipe tracker, OSC reception, hand visualization, gesture ro
 mediapipe_handdraw.js
 ```
 
-Draws the MediaPipe landmarks received by the Max patch.
+Draws the MediaPipe landmarks received by the Max patch, and the tracker's start-up steps (see [Universal launcher](#universal-launcher)).
+
+Both hands are drawn in neutral greys by default. Each patch can set its own colours:
+
+| Message | Effect |
+| --- | --- |
+| `lefthandcolor r g b a` | colour of the left hand |
+| `righthandcolor r g b a` | colour of the right hand |
+
+Values go from 0 to 1, like Max colours; values from 0 to 255 are also accepted. The alpha value is optional. For example, `lefthandcolor 0.882 0.588 0.008 1` gives the amber of the earlier version.
 
 ### Gesture Routing Matrix
 

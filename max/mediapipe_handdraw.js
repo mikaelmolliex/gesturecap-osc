@@ -8,6 +8,9 @@
 //   status <step>                         from run_mediapipe.js:
 //       starting, loading, model, camera, ready,
 //       stopped, not_found, camera_denied, stopped_unexpectedly, error
+//   lefthandcolor r g b [a]               colour of the left hand
+//   righthandcolor r g b [a]              colour of the right hand
+//                                         (0-1 like Max colours; 0-255 also accepted)
 //   clear                                 camera off: forget hands and steps
 //   bang                                  redraw (animation)
 
@@ -19,6 +22,10 @@ var leftHand = [];
 var rightHand = [];
 var leftTime = 0;
 var rightTime = 0;
+
+// Neutral by default; each patch can choose its own colours
+var leftColor = [0.90, 0.90, 0.90, 1.0];
+var rightColor = [0.62, 0.62, 0.62, 1.0];
 
 var CONNECTIONS = [
     [0,1],[1,2],[2,3],[3,4],
@@ -128,6 +135,43 @@ function status(step)
     refresh();
 }
 
+function lefthandcolor()
+{
+    leftColor = parseColor(arrayfromargs(arguments), leftColor);
+    refresh();
+}
+
+function righthandcolor()
+{
+    rightColor = parseColor(arrayfromargs(arguments), rightColor);
+    refresh();
+}
+
+function parseColor(values, previous)
+{
+    var i;
+    var scale = 1.0;
+
+    if (values.length < 3)
+    {
+        post("hand colour: expected r g b [a]\n");
+        return previous;
+    }
+
+    for (i = 0; i < values.length; i++)
+    {
+        if (values[i] > 1.0)
+            scale = 255.0;   // 0-255 values
+    }
+
+    return [
+        values[0] / scale,
+        values[1] / scale,
+        values[2] / scale,
+        values.length > 3 ? values[3] / scale : 1.0
+    ];
+}
+
 function clear()
 {
     resetToIdle();
@@ -174,10 +218,10 @@ function paint()
     var rightVisible = t - rightTime < HAND_TIMEOUT_MS;
 
     if (leftVisible)
-        drawHand(leftHand, w, h, 0.882, 0.588, 0.008, 1.0);
+        drawHand(leftHand, w, h, leftColor);
 
     if (rightVisible)
-        drawHand(rightHand, w, h, 0.365, 0.420, 0.886, 1.0);
+        drawHand(rightHand, w, h, rightColor);
 
     if (leftVisible || rightVisible)
         return;
@@ -322,12 +366,12 @@ function setColor(c, alpha)
     mgraphics.set_source_rgba(c[0], c[1], c[2], c[3] * alpha);
 }
 
-function drawHand(hand, w, h, r, g, b, a)
+function drawHand(hand, w, h, color)
 {
     if(hand.length < 63)
         return;
 
-    mgraphics.set_source_rgba(r, g, b, a);
+    mgraphics.set_source_rgba(color[0], color[1], color[2], color[3]);
     mgraphics.set_line_width(2);
 
     // skeleton
