@@ -54,6 +54,19 @@
     outputdisplay always
     outputdisplay activity
     outputdisplay hidden
+    outputvaluesize 1.0
+
+    backgroundcolor r g b [a]
+    dialbodycolor r g b [a]
+    dialinnercolor r g b [a]
+    trackcolor r g b [a]
+    outputcolor r g b [a]
+    inputinactivecolor r g b [a]
+    inputactivecolor r g b [a]
+    rangecolor r g b [a]
+    nearfarcolor r g b [a]
+    textcolor r g b [a]
+    triggercolor r g b [a]
 
     sensitivity 160
     reset
@@ -100,10 +113,10 @@ var displayUnitNames = [
     "cents"
 ];
 
-var displayUnitIndex = 0;
+var displayUnitIndex = 1;
 
 var displayMinimum = 0.0;
-var displayMaximum = 100.0;
+var displayMaximum = 1.0;
 
 
 // ==================================================
@@ -136,11 +149,13 @@ var calibrationPreviewHoldMs = 700;
 var inputLedMode = "always";
 var inputActivity = 0;
 var inputActivityTask = null;
+var inputActivityDuration = 300;
 
 var outputDisplayMode = "activity";
 var valueDisplayVisible = 0;
 var valueDisplayHoldMs = 650;
 var valueDisplayTask = null;
+var outputValueTextScale = 1.0;
 
 /*
     Play Range preview.
@@ -148,7 +163,19 @@ var valueDisplayTask = null;
 
 var rangePreviewVisible = 0;
 var rangePreviewTask = null;
-var rangePreviewHoldMs = 800;
+var rangePreviewHoldMs = 900;
+var rangePreviewSuppressedUntil = 0;
+var rangePreviewPresetGuardMs = 100;
+
+/*
+    Pattr can restore the first dial before restoring its mapping
+    parameters. Apply its value on the next scheduler pass so those
+    parameters cannot immediately overwrite it.
+*/
+
+var pendingPattrValue = null;
+var pattrRestoreTask = null;
+var pattrRestoreDelayMs = 1;
 
 
 // ==================================================
@@ -198,6 +225,176 @@ var colorTextBright =
 
 var colorTrigger =
     [1.000, 0.230, 0.310, 1.0];
+
+
+// ==================================================
+// COLOR MESSAGES
+// ==================================================
+
+function colorComponent(v)
+{
+    var value = Number(v);
+
+    if (!isFinite(value))
+    {
+        return null;
+    }
+
+    return clip(value, 0, 1);
+}
+
+
+function updateUiColor(currentColor, args)
+{
+    if (args.length < 3)
+    {
+        return currentColor;
+    }
+
+    var r = colorComponent(args[0]);
+    var g = colorComponent(args[1]);
+    var b = colorComponent(args[2]);
+
+    if (
+        r === null ||
+        g === null ||
+        b === null
+    )
+    {
+        return currentColor;
+    }
+
+    var a = currentColor[3];
+
+    if (args.length >= 4)
+    {
+        var requestedAlpha = colorComponent(args[3]);
+
+        if (requestedAlpha !== null)
+        {
+            a = requestedAlpha;
+        }
+    }
+
+    currentColor[0] = r;
+    currentColor[1] = g;
+    currentColor[2] = b;
+    currentColor[3] = a;
+
+    mgraphics.redraw();
+
+    return currentColor;
+}
+
+
+function backgroundcolor()
+{
+    colorBackground =
+        updateUiColor(
+            colorBackground,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function dialbodycolor()
+{
+    colorDialBody =
+        updateUiColor(
+            colorDialBody,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function dialinnercolor()
+{
+    colorDialInner =
+        updateUiColor(
+            colorDialInner,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function trackcolor()
+{
+    colorTrack =
+        updateUiColor(
+            colorTrack,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function outputcolor()
+{
+    colorOutput =
+        updateUiColor(
+            colorOutput,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function inputinactivecolor()
+{
+    colorInputInactive =
+        updateUiColor(
+            colorInputInactive,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function inputactivecolor()
+{
+    colorInputActive =
+        updateUiColor(
+            colorInputActive,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function rangecolor()
+{
+    colorRange =
+        updateUiColor(
+            colorRange,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function nearfarcolor()
+{
+    colorNearFar =
+        updateUiColor(
+            colorNearFar,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function textcolor()
+{
+    colorTextBright =
+        updateUiColor(
+            colorTextBright,
+            arrayfromargs(arguments)
+        );
+}
+
+
+function triggercolor()
+{
+    colorTrigger =
+        updateUiColor(
+            colorTrigger,
+            arrayfromargs(arguments)
+        );
+}
 
 
 // ==================================================
@@ -690,128 +887,6 @@ function drawOutputTrack(g)
 
 
 // ==================================================
-// PLAYABLE RANGE PREVIEW
-// ==================================================
-
-function drawRangeOverlay(g)
-{
-    /*
-        17 graduations seulement :
-        visuellement plus fortes que l'Input.
-    */
-
-    var rangeTickCount = 17;
-    var i;
-
-    for (i = 0; i < rangeTickCount; i++)
-    {
-        var value =
-            i / (rangeTickCount - 1);
-
-        var angle =
-            valueToAngle(value);
-
-        var inside =
-            value >= rangeMin &&
-            value <= rangeMax;
-
-        var isMajor =
-            i % 4 === 0;
-
-        var isMedium =
-            !isMajor &&
-            i % 2 === 0;
-
-        var barLength;
-
-        if (isMajor)
-            barLength = g.size * 0.050;
-
-        else if (isMedium)
-            barLength = g.size * 0.037;
-
-        else
-            barLength = g.size * 0.025;
-
-
-        var innerRadius =
-            g.rangeRadius -
-            barLength * 0.5;
-
-        var outerRadius =
-            g.rangeRadius +
-            barLength * 0.5;
-
-
-        var x1 =
-            g.cx +
-            Math.cos(angle) *
-            innerRadius;
-
-        var y1 =
-            g.cy +
-            Math.sin(angle) *
-            innerRadius;
-
-        var x2 =
-            g.cx +
-            Math.cos(angle) *
-            outerRadius;
-
-        var y2 =
-            g.cy +
-            Math.sin(angle) *
-            outerRadius;
-
-
-        if (inside)
-        {
-            setColor(
-                colorRange
-            );
-        }
-        else
-        {
-            setColor([
-                colorRange[0] * 0.18,
-                colorRange[1] * 0.18,
-                colorRange[2] * 0.18,
-                0.42
-            ]);
-        }
-
-
-        var width;
-
-        if (isMajor)
-            width = g.size * 0.009;
-
-        else if (isMedium)
-            width = g.size * 0.0065;
-
-        else
-            width = g.size * 0.0045;
-
-
-        mgraphics.set_line_width(
-            width
-        );
-
-        mgraphics.move_to(
-            x1,
-            y1
-        );
-
-        mgraphics.line_to(
-            x2,
-            y2
-        );
-
-        mgraphics.stroke();
-    }
-}
-
-// ==================================================
 // DIAL BODY
 // ==================================================
 
@@ -970,10 +1045,10 @@ function drawOutputText(g)
 
         g.cx,
 
-        g.cy +
-        g.size * 0.026,
+        g.cy,
 
-        g.size * 0.079,
+        g.size * 0.079 *
+        outputValueTextScale,
 
         colorTextBright
     );
@@ -1121,15 +1196,11 @@ function calculateOutput(
         );
 
 
-    // 5. Triggers
-
-    checkTriggers();
-
-
-    // 6. Outlets
-
+    // 5. Triggers and outlets
+    // Silent updates must not emit normal values or trigger bangs.
     if (sendOutput)
     {
+        checkTriggers();
         sendOutputs();
     }
 
@@ -1352,14 +1423,33 @@ function msg_int(v)
 }
 
 
+function normalizedInputValue(v)
+{
+    var value = Number(v);
+
+    if (!isFinite(value))
+    {
+        return null;
+    }
+
+    return clip(
+        value,
+        0,
+        1
+    );
+}
+
+
 function input(v)
 {
-    rawInput =
-        clip(
-            Number(v),
-            0,
-            1
-        );
+    var value = normalizedInputValue(v);
+
+    if (value === null)
+    {
+        return;
+    }
+
+    rawInput = value;
 
     if (
         inputLedMode === "activity"
@@ -1378,12 +1468,14 @@ function input(v)
 
 function setinput(v)
 {
-    rawInput =
-        clip(
-            Number(v),
-            0,
-            1
-        );
+    var value = normalizedInputValue(v);
+
+    if (value === null)
+    {
+        return;
+    }
+
+    rawInput = value;
 
     calculateOutput(0);
 
@@ -1475,18 +1567,10 @@ function setnear(v)
         nearValue = farValue;
 
     /*
-        Preview graphique seulement.
-
-        IMPORTANT :
-        on ne recalcule PAS outputValue maintenant.
-        Le knob reste à sa dernière position.
+        Mapping preview only. Keep the current visible output stable;
+        the new Near value is applied on the next input or manual drag.
     */
-
     showCalibrationPreview();
-
-    notifyclients();
-
-    mgraphics.redraw();
 }
 
 
@@ -1502,77 +1586,12 @@ function setfar(v)
     if (farValue < nearValue)
         farValue = nearValue;
 
+    /*
+        Mapping preview only. Keep the current visible output stable;
+        the new Far value is applied on the next input or manual drag.
+    */
     showCalibrationPreview();
-
-    notifyclients();
-
-    mgraphics.redraw();
 }
-
-
-// ==================================================
-// NEAR / FAR
-// ==================================================
-
-function setnear(v)
-{
-    nearValue =
-        clip(
-            Number(v),
-            0,
-            1
-        );
-
-    /*
-        Near ne peut pas dépasser Far.
-    */
-
-    if (
-        nearValue >
-        farValue
-    )
-    {
-        nearValue =
-            farValue;
-    }
-
-    calculateOutput(1);
-
-    notifyclients();
-
-    mgraphics.redraw();
-}
-
-
-function setfar(v)
-{
-    farValue =
-        clip(
-            Number(v),
-            0,
-            1
-        );
-
-    /*
-        Far ne peut pas passer sous Near.
-    */
-
-    if (
-        farValue <
-        nearValue
-    )
-    {
-        farValue =
-            nearValue;
-    }
-
-    calculateOutput(1);
-
-    notifyclients();
-
-    mgraphics.redraw();
-}
-
 
 // ==================================================
 // INVERT
@@ -1648,16 +1667,11 @@ function rangemin(v)
         rangeMin = rangeMax;
     }
 
-    showRangePreviewTimed();
-
     /*
-        IMPORTANT :
-        on ne bouge pas le knob maintenant.
+        Mapping preview only. Keep the current visible output stable;
+        the new Range is applied on the next input or manual drag.
     */
-
-    notifyclients();
-
-    mgraphics.redraw();
+    showRangePreviewTimed();
 }
 
 
@@ -1671,11 +1685,11 @@ function rangemax(v)
         rangeMax = rangeMin;
     }
 
+    /*
+        Mapping preview only. Keep the current visible output stable;
+        the new Range is applied on the next input or manual drag.
+    */
     showRangePreviewTimed();
-
-    notifyclients();
-
-    mgraphics.redraw();
 }
 
 
@@ -1683,8 +1697,37 @@ function rangemax(v)
 // RANGE PREVIEW TIMER
 // ==================================================
 
-function showRangePreviewTimed()
+function rangePreviewIsSuppressed()
 {
+    return (
+        pendingPattrValue !== null ||
+        (new Date()).getTime() <
+            rangePreviewSuppressedUntil
+    );
+}
+
+
+function cancelRangePreview()
+{
+    if (rangePreviewTask !== null)
+    {
+        rangePreviewTask.cancel();
+    }
+
+    rangePreviewVisible = 0;
+
+    mgraphics.redraw();
+}
+
+
+function beginRangePreview()
+{
+    if (rangePreviewIsSuppressed())
+    {
+        cancelRangePreview();
+        return;
+    }
+
     rangePreviewVisible = 1;
 
     if (rangePreviewTask === null)
@@ -1710,6 +1753,18 @@ function showRangePreviewTimed()
     );
 
     mgraphics.redraw();
+}
+
+
+function showRangePreviewTimed()
+{
+    if (rangePreviewIsSuppressed())
+    {
+        cancelRangePreview();
+        return;
+    }
+
+    beginRangePreview();
 }
 
 
@@ -2236,7 +2291,7 @@ function showInputActivity()
     }
 
     inputActivityTask.schedule(
-        300
+        inputActivityDuration
     );
 
     mgraphics.redraw();
@@ -2282,6 +2337,26 @@ function outputdisplay()
     {
         valueDisplayVisible = 0;
     }
+
+    mgraphics.redraw();
+}
+
+
+function outputvaluesize(v)
+{
+    var value = Number(v);
+
+    if (!isFinite(value))
+    {
+        return;
+    }
+
+    outputValueTextScale =
+        clip(
+            value,
+            0.25,
+            3.0
+        );
 
     mgraphics.redraw();
 }
@@ -2367,42 +2442,6 @@ function showValueDisplayTimed()
 
 
 // ==================================================
-// RANGE PREVIEW
-// ==================================================
-
-function showRangePreviewTimed()
-{
-    rangePreviewVisible = 1;
-
-    if (
-        rangePreviewTask === null
-    )
-    {
-        rangePreviewTask =
-            new Task(
-                function()
-                {
-                    rangePreviewVisible = 0;
-
-                    mgraphics.redraw();
-                },
-                this
-            );
-    }
-    else
-    {
-        rangePreviewTask.cancel();
-    }
-
-    rangePreviewTask.schedule(
-        rangePreviewHoldMs
-    );
-
-    mgraphics.redraw();
-}
-
-
-// ==================================================
 // SENSITIVITY
 // ==================================================
 
@@ -2434,9 +2473,9 @@ function reset()
     inverted = 0;
     curveExponent = 1.0;
 
-    displayUnitIndex = 0;
+    displayUnitIndex = 1;
     displayMinimum = 0;
-    displayMaximum = 100;
+    displayMaximum = 1;
 
     triggerEnabled = 0;
 
@@ -2775,11 +2814,7 @@ function getDisplayOutputAtoms(v)
     )
     {
         return [
-            Number(
-                (
-                    v * 100
-                ).toFixed(1)
-            ),
+            v * 100,
             "%"
         ];
     }
@@ -2792,9 +2827,7 @@ function getDisplayOutputAtoms(v)
     )
     {
         return [
-            Number(
-                v.toFixed(4)
-            ),
+            v,
             "0-1"
         ];
     }
@@ -2824,9 +2857,7 @@ function getDisplayOutputAtoms(v)
     )
     {
         return [
-            Number(
-                displayedValue.toFixed(1)
-            ),
+            displayedValue,
             "Hz"
         ];
     }
@@ -2839,9 +2870,7 @@ function getDisplayOutputAtoms(v)
     )
     {
         return [
-            Number(
-                displayedValue.toFixed(1)
-            ),
+            displayedValue,
             "dB"
         ];
     }
@@ -2854,9 +2883,7 @@ function getDisplayOutputAtoms(v)
     )
     {
         return [
-            Number(
-                displayedValue.toFixed(1)
-            ),
+            displayedValue,
             "st"
         ];
     }
@@ -2865,9 +2892,7 @@ function getDisplayOutputAtoms(v)
     // Cents
 
     return [
-        Math.round(
-            displayedValue
-        ),
+        displayedValue,
         "ct"
     ];
 }
@@ -2913,6 +2938,52 @@ function sendOutputs()
 // DISPLAY FORMAT
 // ==================================================
 
+function formatRoundedValue(
+    value,
+    maximumDecimals,
+    minimumDecimals
+)
+{
+    var text =
+        Number(value).toFixed(
+            maximumDecimals
+        );
+
+    while (
+        maximumDecimals >
+            minimumDecimals &&
+        text.charAt(
+            text.length - 1
+        ) === "0"
+    )
+    {
+        text =
+            text.substring(
+                0,
+                text.length - 1
+            );
+
+        maximumDecimals--;
+    }
+
+    if (
+        maximumDecimals === 0 &&
+        text.charAt(
+            text.length - 1
+        ) === "."
+    )
+    {
+        text =
+            text.substring(
+                0,
+                text.length - 1
+            );
+    }
+
+    return text;
+}
+
+
 function formatDisplayValue(v)
 {
     var atoms =
@@ -2932,7 +3003,11 @@ function formatDisplayValue(v)
     )
     {
         return (
-            Math.round(value) +
+            formatRoundedValue(
+                value,
+                2,
+                0
+            ) +
             "%"
         );
     }
@@ -2942,9 +3017,11 @@ function formatDisplayValue(v)
         symbol === "0-1"
     )
     {
-        return Number(
-            value
-        ).toFixed(3);
+        return formatRoundedValue(
+            value,
+            3,
+            1
+        );
     }
 
 
@@ -2953,17 +3030,39 @@ function formatDisplayValue(v)
     )
     {
         if (
+            Math.abs(value) >= 1000
+        )
+        {
+            return (
+                formatRoundedValue(
+                    value / 1000,
+                    2,
+                    0
+                ) +
+                "kHz"
+            );
+        }
+
+        if (
             Math.abs(value) >= 100
         )
         {
             return (
-                Math.round(value) +
+                formatRoundedValue(
+                    value,
+                    0,
+                    0
+                ) +
                 "Hz"
             );
         }
 
         return (
-            Number(value).toFixed(1) +
+            formatRoundedValue(
+                value,
+                2,
+                0
+            ) +
             "Hz"
         );
     }
@@ -2974,7 +3073,11 @@ function formatDisplayValue(v)
     )
     {
         return (
-            Number(value).toFixed(1) +
+            formatRoundedValue(
+                value,
+                2,
+                0
+            ) +
             "dB"
         );
     }
@@ -2987,11 +3090,17 @@ function formatDisplayValue(v)
         var stPrefix =
             value > 0
             ? "+"
+            : value < 0
+            ? "-"
             : "";
 
         return (
             stPrefix +
-            Number(value).toFixed(1) +
+            formatRoundedValue(
+                Math.abs(value),
+                2,
+                0
+            ) +
             "st"
         );
     }
@@ -3000,11 +3109,17 @@ function formatDisplayValue(v)
     var ctPrefix =
         value > 0
         ? "+"
+        : value < 0
+        ? "-"
         : "";
 
     return (
         ctPrefix +
-        Math.round(value) +
+        formatRoundedValue(
+            Math.abs(value),
+            0,
+            0
+        ) +
         "ct"
     );
 }
@@ -3116,7 +3231,7 @@ function drawArc(
 function drawCenteredText(
     text,
     centerX,
-    baselineY,
+    centerY,
     fontSize,
     color
 )
@@ -3148,7 +3263,9 @@ function drawCenteredText(
         measurement[0] *
         0.5,
 
-        baselineY
+        centerY +
+        fontSize *
+        0.33
     );
 
     mgraphics.show_text(
@@ -3226,20 +3343,124 @@ function degreesToRadians(
 
 function getvalueof()
 {
+    if (pendingPattrValue !== null)
+    {
+        return pendingPattrValue;
+    }
+
     return outputValue;
+}
+
+
+function applyPendingPattrValue()
+{
+    if (pendingPattrValue === null)
+    {
+        return;
+    }
+
+    var recalledOutput = pendingPattrValue;
+    pendingPattrValue = null;
+
+    /*
+        pattr stores the final visible value. Rebuild rawInput by
+        undoing Range, Exponent, Invert, then Near/Far so the next
+        drag starts from the recalled physical position.
+    */
+
+    var rangeSpan =
+        rangeMax -
+        rangeMin;
+
+    var normalized = 0;
+
+    if (Math.abs(rangeSpan) >= 0.000001)
+    {
+        normalized =
+            clip(
+                (
+                    recalledOutput -
+                    rangeMin
+                ) /
+                rangeSpan,
+                0,
+                1
+            );
+    }
+
+    normalized =
+        Math.pow(
+            normalized,
+            1 /
+            Math.max(
+                0.001,
+                curveExponent
+            )
+        );
+
+    if (inverted)
+    {
+        normalized =
+            1 -
+            normalized;
+    }
+
+    rawInput =
+        clip(
+            nearValue +
+            normalized *
+            (
+                farValue -
+                nearValue
+            ),
+            0,
+            1
+        );
+
+    calculateOutput(0);
+
+    /*
+        The deferred recall must publish the restored value once.
+        Use sendOutputs() directly so MIN/MAX trigger bangs remain
+        silent during preset recall.
+    */
+    sendOutputs();
 }
 
 
 function setvalueof(v)
 {
-    outputValue =
-        clip(
-            Number(v),
-            0,
-            1
-        );
+    var value = normalizedInputValue(v);
 
-    mgraphics.redraw();
+    if (value === null)
+    {
+        return;
+    }
+
+    pendingPattrValue = value;
+
+    rangePreviewSuppressedUntil =
+        (new Date()).getTime() +
+        rangePreviewPresetGuardMs;
+
+    cancelRangePreview();
+
+    if (pattrRestoreTask === null)
+    {
+        pattrRestoreTask =
+            new Task(
+                applyPendingPattrValue,
+                this
+            );
+    }
+    else
+    {
+        pattrRestoreTask.cancel();
+    }
+
+    pattrRestoreTask.schedule(
+        pattrRestoreDelayMs
+    );
 }
 
 // ==================================================

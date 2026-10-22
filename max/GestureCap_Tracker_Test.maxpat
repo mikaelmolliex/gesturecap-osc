@@ -9,9 +9,33 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 331.0, 109.0, 649.0, 775.0 ],
+        "rect": [ 331.0, 109.0, 956.0, 775.0 ],
         "openinpresentation": 1,
         "boxes": [
+            {
+                "box": {
+                    "id": "obj-32",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 1972.4999529719353, 483.3333218097687, 191.0, 22.0 ],
+                    "text": "righthandcolor 0.921 0.902 0.84 1.",
+                    "textcolor": [ 0.9214377999305725, 0.9016769528388977, 0.8395246267318726, 1.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-9",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 1944.9999536275864, 422.61113011837006, 191.0, 22.0 ],
+                    "text": "lefthandcolor 0.565 0.741 0.624 1.",
+                    "textcolor": [ 0.5647058823529412, 0.7411764705882353, 0.6235294117647059, 1.0 ]
+                }
+            },
             {
                 "box": {
                     "fontsize": 20.0,
@@ -291,6 +315,9 @@
             },
             {
                 "box": {
+                    "active": {
+                        "multi-dial-panel::live.text[3]": 0
+                    },
                     "fontname": "Arial",
                     "fontsize": 13.0,
                     "id": "obj-68",
@@ -440,7 +467,7 @@
                     "numinlets": 0,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 2033.3334302902222, 398.61113011837006, 102.0, 22.0 ],
+                    "patching_rect": [ 1960.8332865834236, 451.6666558980942, 102.0, 22.0 ],
                     "text": "r Visu_RightHand"
                 }
             },
@@ -503,7 +530,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 34.0, 95.0, 1444.0, 853.0 ],
+                        "rect": [ 34.0, 95.0, 1137.0, 853.0 ],
                         "openinpresentation": 1,
                         "gridsize": [ 4.0, 4.0 ],
                         "lefttoolbarpinned": 1,
@@ -5136,8 +5163,6 @@
                     "saved_object_attributes": {
                         "autostart": 0,
                         "defer": 0,
-                        "node_bin_path": "",
-                        "npm_bin_path": "",
                         "watch": 0
                     },
                     "text": "node.script run_mediapipe.js",
@@ -14086,7 +14111,7 @@
                                                                     "numoutlets": 1,
                                                                     "outlettype": [ "" ],
                                                                     "patching_rect": [ 868.3760771751404, 453.6585474014282, 72.64957338571548, 22.0 ],
-                                                                    "text": "0.428491"
+                                                                    "text": "0.436502"
                                                                 }
                                                             },
                                                             {
@@ -14185,7 +14210,7 @@
                                                                     "numoutlets": 1,
                                                                     "outlettype": [ "" ],
                                                                     "patching_rect": [ 362.19513177871704, 453.6585474014282, 69.0, 22.0 ],
-                                                                    "text": "0.59787"
+                                                                    "text": "0.531034"
                                                                 }
                                                             },
                                                             {
@@ -25524,7 +25549,7 @@
                                                                     "numoutlets": 1,
                                                                     "outlettype": [ "" ],
                                                                     "patching_rect": [ 487.79675451914466, 453.6585474014282, 59.0, 22.0 ],
-                                                                    "text": "0.483662"
+                                                                    "text": "0.719235"
                                                                 }
                                                             },
                                                             {
@@ -25546,7 +25571,7 @@
                                                                     "numoutlets": 1,
                                                                     "outlettype": [ "" ],
                                                                     "patching_rect": [ 362.19513177871704, 453.6585474014282, 69.0, 22.0 ],
-                                                                    "text": "0.49445"
+                                                                    "text": "0.142418"
                                                                 }
                                                             },
                                                             {
@@ -31193,7 +31218,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 280.6451632976532, 1054.8387172222137, 311.1111259460449, 22.0 ],
-                                    "text": "right_thumb_tip 0 0 0"
+                                    "text": "wearable_right 2 11 0"
                                 }
                             },
                             {
@@ -35069,6 +35094,12 @@
             },
             {
                 "patchline": {
+                    "destination": [ "obj-66", 1 ],
+                    "source": [ "obj-32", 0 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-26", 1 ],
                     "source": [ "obj-323", 0 ]
                 }
@@ -35234,6 +35265,12 @@
                 "patchline": {
                     "destination": [ "obj-16", 0 ],
                     "source": [ "obj-8", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-66", 1 ],
+                    "source": [ "obj-9", 0 ]
                 }
             }
         ],
@@ -35423,14 +35460,6 @@
             "obj-49::obj-690::obj-9::obj-862": [ "live.numbox[45]", "live.numbox[37]", 0 ],
             "obj-49::obj-690::obj-9::obj-9": [ "live.numbox[39]", "live.numbox[37]", 0 ],
             "obj-49::obj-983": [ "live.text[143]", "live.text[30]", 0 ],
-            "parameterbanks": {
-                "0": {
-                    "index": 0,
-                    "name": "",
-                    "parameters": [ "-", "-", "-", "-", "-", "-", "-", "-" ],
-                    "buttons": [ "-", "-", "-", "-", "-", "-", "-", "-" ]
-                }
-            },
             "parameter_overrides": {
                 "obj-49::obj-65": {
                     "parameter_longname": "live.text[72]"
