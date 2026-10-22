@@ -25,7 +25,14 @@ import sys
 import threading
 import time
 
+# Show each line at once when Max reads our output through a pipe
+sys.stdout.reconfigure(line_buffering=True)
+
 print(f"MAIN START {time.perf_counter():.3f}", flush=True)
+
+# Record who started us before the slow imports (see utils/parent_watch.py)
+from utils.parent_watch import ParentWatch
+parent_watch = ParentWatch()
 
 import cv2
 
@@ -119,6 +126,13 @@ def main():
 
     signal.signal(signal.SIGTERM, request_stop)
     signal.signal(signal.SIGINT, request_stop)
+
+    # Never run without the application that started us (e.g. if Max crashes)
+    def parent_gone(reason):
+        print(f"Stopping: {reason}.", flush=True)
+        latest.stop()
+
+    parent_watch.start(parent_gone)
 
     # The camera opens while the detector loads
     camera = threading.Thread(target=camera_loop, args=(latest,), daemon=True)

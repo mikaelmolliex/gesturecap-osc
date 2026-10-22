@@ -224,6 +224,10 @@ With the `v0.1.0` tracker, the initial launch can take approximately 20–30 sec
 
 ### Tracker paths by integration mode
 
+**Recommended:** the universal launcher [`max/run_mediapipe.js`](max/run_mediapipe.js) finds the tracker by itself in a regular patch, a Max Project or a standalone application, and makes sure the tracker never keeps running without Max. In a Max Project, keep `tracker/` beside the project folder, never inside it. See [Max/MSP Integration](docs/max-integration.md#universal-launcher-recommended).
+
+The earlier launchers below are kept for now.
+
 The tracker location depends on how GestureCap OSC is being used. The three launcher scripts intentionally use different paths for the standard repository, a Max Project, and a standalone application.
 
 #### Ready-to-run repository
@@ -375,6 +379,7 @@ max/mediapipe_handdraw.js                Landmark visualizer
 max/gesture_mapper_ui_multimode_extended.js
                                          Gesture routing matrix
 max/custom.dial.v9.js                    Custom parameter dial
+max/run_mediapipe.js                     Universal launcher (patch, Max Project, standalone)
 max/run_mediapipe_maxmsp.js              Regular Max patch launcher
 max/run_mediapipe_maxmsp_project.js      Max Project launcher
 max/run_mediapipe_standalone.js          Standalone application launcher
