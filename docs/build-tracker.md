@@ -130,6 +130,18 @@ The complete `_internal/` directory must remain beside the executable.
 
 ---
 
+## Add the Licence Texts
+
+Every packaged tracker must carry its licence and the licences of what it embeds (see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)):
+
+```bash
+.venv/bin/python tools/collect_licenses.py /private/tmp/gesturecap-release-dist/doublehand_mp
+```
+
+This adds `LICENSE`, `THIRD_PARTY_NOTICES.md` and a `licenses/` folder beside the executable. Run it with the Python of the build environment: it reads the licence files of the installed packages.
+
+---
+
 ## Verify and Test the Signed Build
 
 Confirm the architecture:
@@ -244,12 +256,15 @@ Expected result:
 gesturecap-tracker-macos-arm64.zip: OK
 ```
 
-Publish both files as GitHub Release assets:
+Publish these files as GitHub Release assets:
 
 ```text
 gesturecap-tracker-macos-arm64.zip
 gesturecap-tracker-macos-arm64.zip.sha256
+ffmpeg-7.1.1.tar.xz
 ```
+
+The packaged tracker embeds a GPL build of FFmpeg (see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)). Attaching the FFmpeg source archive of the same version, downloaded from [ffmpeg.org/releases](https://ffmpeg.org/releases/), keeps the corresponding source available beside the binary.
 
 The ZIP, checksum, build directories, and `dist/` are generated outputs and must remain outside Git history.
 

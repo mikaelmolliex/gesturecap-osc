@@ -250,13 +250,13 @@ The same signed and notarized tracker is also distributed separately as `gesture
 
 Release workflow:
 
-1. Build `doublehand_mp/` from the committed PyInstaller specification.
+1. Build `doublehand_mp/` from the committed PyInstaller specification, then add the licence texts with `tools/collect_licenses.py`.
 2. Sign the release build with a Developer ID Application identity and hardened runtime.
 3. Verify the executable and test the complete generated directory.
 4. Compress the signed `doublehand_mp/` directory as `gesturecap-tracker-macos-arm64.zip`.
 5. Submit that exact archive to Apple's notary service.
 6. Generate and verify `gesturecap-tracker-macos-arm64.zip.sha256`.
-7. Attach the accepted archive and checksum to a GitHub Release.
+7. Attach the accepted archive, its checksum and the FFmpeg source archive to a GitHub Release.
 8. Keep standalone ZIP and checksum assets outside Git history.
 
 The unpacked tracker is approximately 217 MB. The release archive is smaller because it is compressed.
@@ -303,11 +303,14 @@ See [macOS Camera Permissions](docs/macos-camera-permissions.md) for the complet
 
 ---
 
-## Project Origin
+## Credits
 
-GestureCap OSC is based on the original GestureCap project developed during Google Summer of Code 2025 under the INCF organization.
+GestureCap OSC builds on two earlier Google Summer of Code projects of the [INCF](https://www.incf.org/) organization:
 
-This repository includes work developed as part of my contribution to Google Summer of Code 2026. It extends the original pipeline with local OSC integration, Max/MSP routing, packaged tracker deployment, embedded visualization, and custom parameter interfaces.
+- [GestureCap](https://github.com/m2b3/gesturecap) (2024), by **Louis Martinez**: the original hand-gesture-to-sound pipeline, released under the GPL-3.0.
+- [GestureCap 2025](https://github.com/m2b3/gesturecap2025) (2025), by **Deepansh Goel**, with webcam input by **Shiv Patil**: the latency work and multiprocessing pipeline from which this repository is forked.
+
+This repository, by **Mikaël Molliex**, includes work developed as part of Google Summer of Code 2026. It extends the pipeline with local OSC integration, Max/MSP routing, a packaged tracker, embedded visualization, and custom parameter interfaces.
 
 ---
 
@@ -319,4 +322,8 @@ Interface icons are sourced from [Iconoir](https://iconoir.com/).
 
 ## License
 
-See the project license for details.
+GestureCap OSC is free software, released under the [GNU General Public License, version 3 or later](LICENSE). It derives from GPL-3.0 code (GestureCap, 2024), and the packaged tracker embeds a GPL build of FFmpeg through OpenCV.
+
+Releases up to `v0.1.0` were published under the MIT license.
+
+Third-party components keep their own licenses: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

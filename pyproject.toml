@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Local MediaPipe hand tracker that sends hand landmarks over OSC"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "GPL-3.0-or-later"
 dependencies = [
     "mediapipe==0.10.14",
     "opencv-python-headless==4.13.0.92",
