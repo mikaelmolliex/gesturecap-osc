@@ -6,7 +6,7 @@
 // Messages:
 //   left <63 floats>, right <63 floats>   hand landmarks (x, y, z per joint)
 //   status <step>                         from run_mediapipe.js:
-//       starting, loading, model, camera, ready,
+//       starting, loading, model, camera, ready, camera_permission,
 //       stopped, not_found, camera_denied, stopped_unexpectedly, error
 //   lefthandcolor r g b [a]               colour of the left hand
 //   righthandcolor r g b [a]              colour of the right hand
@@ -48,6 +48,8 @@ var STEPS = [
 var MESSAGES = {
     idle:                 ["Camera off", "Turn the camera on to start."],
     ready:                ["Camera ready", "Show your hands to the camera."],
+    camera_permission:    ["Camera permission needed",
+                           "Click Allow in the macOS dialog to let Max use the camera."],
     not_found:            ["Tracker not found", "The Max console lists the places searched."],
     camera_denied:        ["Camera not available",
                            "Allow camera access in System Settings > Privacy & Security > Camera, then turn the camera on again."],
@@ -107,6 +109,10 @@ function status(step)
     {
         if (STEPS[i].key === step)
         {
+            // A camera message stays until the camera is ready or fails
+            if (phase === "camera_permission" || phase === "camera_denied")
+                return;
+
             if (phase !== "steps" || i > stepIndex)
             {
                 phase = "steps";

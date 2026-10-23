@@ -78,12 +78,15 @@ Its outlet sends `status <step>`. Connect it to the hand view (`mediapipe_handdr
 | --- | --- |
 | `starting`, `loading`, `model`, `camera` | The start-up steps, one line each: Starting the hand tracker, Loading MediaPipe, Loading the hand model, Opening the camera |
 | `ready` | Camera ready. Show your hands to the camera. |
+| `camera_permission` | Camera permission needed. Click Allow in the macOS dialog to let Max use the camera. |
 | `stopped` | Camera off. Turn the camera on to start. |
 | `not_found` | Tracker not found |
 | `camera_denied` | Camera not available, with the System Settings path |
 | `stopped_unexpectedly`, `error` | The tracker stopped / could not start: see the Max console |
 
 When no hand has been seen for 1.5 seconds, the view reminds the user to show their hands.
+
+**Camera permission.** The first time the tracker runs for a user, macOS asks whether Max (or the standalone application) may use the camera. The tracker keeps trying to open the camera for up to 60 seconds while the dialog is on screen, and the hand view asks the user to click Allow; tracking then starts by itself. If access is denied, the view shows where to allow it: System Settings > Privacy & Security > Camera.
 
 **The tracker never runs without Max.** `camera_off` stops it, closing the patch or quitting Max stops it, and if Max crashes or is force-quit, the tracker notices that Max is gone and stops by itself within about a second, releasing the camera ([utils/parent_watch.py](../utils/parent_watch.py)).
 

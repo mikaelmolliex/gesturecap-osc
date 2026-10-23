@@ -49,6 +49,10 @@ FRAME_HEIGHT = 480
 OSC_IP   = "127.0.0.1"
 OSC_PORT = 11111
 
+# On a first launch, macOS asks the user to allow the camera: keep trying to
+# open it for this long instead of failing while the dialog is on screen
+CAMERA_WAIT_S = 60
+
 
 # ==================================================
 # MIKAEL MODIFICATION
@@ -94,11 +98,27 @@ class LatestFrame:
             return None, last_count
 
 
+def open_camera(latest):
+    """Open the webcam, waiting up to CAMERA_WAIT_S for the user's permission."""
+    deadline = time.monotonic() + CAMERA_WAIT_S
+    announced = False
+    while not latest.stopped:
+        try:
+            return WebcamInput(width=FRAME_WIDTH, height=FRAME_HEIGHT)
+        except RuntimeError as error:
+            if time.monotonic() >= deadline:
+                latest.stop(error)
+                return None
+            if not announced:
+                print("WAITING FOR CAMERA: allow camera access if macOS asks.", flush=True)
+                announced = True
+            time.sleep(1.0)
+    return None
+
+
 def camera_loop(latest):
-    try:
-        cam = WebcamInput(width=FRAME_WIDTH, height=FRAME_HEIGHT)
-    except RuntimeError as error:
-        latest.stop(error)
+    cam = open_camera(latest)
+    if cam is None:
         return
 
     try:

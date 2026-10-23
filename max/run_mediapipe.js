@@ -20,6 +20,7 @@
 // Messages:  camera_on, camera_off, trackerpath <path>, where
 // Outlet:    status <step>, for the display in mediapipe_handdraw.js:
 //              starting  -> loading -> model -> camera -> ready
+//              camera_permission (waiting for the user to allow the camera)
 //              stopped, not_found, camera_denied, stopped_unexpectedly, error
 //
 // The tracker never outlives Max: camera_off stops it, quitting Max stops it,
@@ -46,9 +47,13 @@ const STEPS = [
     [/^Streaming hand landmarks/, "camera"],
     [/^TRACKER READY/, "ready"],
 ];
+// The tracker keeps trying while macOS asks for the camera permission
+const CAMERA_WAITING = [
+    /not authorized to capture video.*requesting/i,
+    /^WAITING FOR CAMERA/,
+];
 const CAMERA_FAILURE = [
-    /not authorized to capture video/i,
-    /camera failed to properly initialize/i,
+    /camera access has been denied/i,
     /could not open webcam/i,
     /failed list devices.*avfoundation/i,
 ];
@@ -155,13 +160,19 @@ function startTracker() {
     tracker = child;
 
     let cameraFailed = false;
+    let cameraWaiting = false;
     let launchFailed = false;
+    let previousLine = null;
 
     const onLine = (line) => {
         if (!line.trim()) {
             return;
         }
-        Max.post(line);
+        // While waiting for the camera, the same lines come back every second
+        if (line !== previousLine) {
+            Max.post(line);
+        }
+        previousLine = line;
         if (tracker !== child) {
             return;
         }
@@ -169,6 +180,10 @@ function startTracker() {
             if (pattern.test(line)) {
                 Max.outlet("status", step);
             }
+        }
+        if (!cameraWaiting && !cameraFailed && CAMERA_WAITING.some((pattern) => pattern.test(line))) {
+            cameraWaiting = true;
+            Max.outlet("status", "camera_permission");
         }
         if (!cameraFailed && CAMERA_FAILURE.some((pattern) => pattern.test(line))) {
             cameraFailed = true;

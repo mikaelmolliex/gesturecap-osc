@@ -220,6 +220,8 @@ max/GestureCap_Tracker_Test.maxpat
 
 Max launches the packaged tracker. The tracker sends MediaPipe landmarks to the visualizer embedded in the Max patch.
 
+The first time, macOS asks whether Max may use the camera: click **Allow**. The tracker waits up to 60 seconds for this answer, then starts by itself.
+
 With the `v0.1.0` tracker, the initial launch can take approximately 20–30 seconds. Later versions start in a few seconds once macOS has checked the files on the first launch.
 
 ### Tracker paths by integration mode
