@@ -216,11 +216,15 @@ On first launch, macOS may display its normal confirmation and camera-permission
 max/GestureCap_Tracker_Test.maxpat
 ```
 
+**Folder access.** macOS protects the Desktop, Documents and Downloads folders. If the repository is in one of them, macOS asks whether Max may access that folder: click **Allow**, otherwise Max cannot load the patch's scripts (`.js` files) and the hand view, routing matrix and dials stay empty. If you clicked Don't Allow, turn Max on in System Settings > Privacy & Security > Files & Folders, then reopen the patch. A folder outside these three (for example `~/gesturecap-osc`) needs no permission.
+
 ### 3. Enable the camera/video control
 
 Max launches the packaged tracker. The tracker sends MediaPipe landmarks to the visualizer embedded in the Max patch.
 
-The first time, macOS asks whether Max may use the camera: click **Allow**. The tracker waits up to 60 seconds for this answer, then starts by itself.
+The first time, macOS asks whether Max may use the camera: click **Allow**. The tracker waits up to 60 seconds for this answer, then starts by itself. If access was denied, turn Max on in System Settings > Privacy & Security > Camera, then turn the camera off and on again.
+
+If the camera goes away while tracking (another app takes it, or you switch to another user account), the tracker waits for it and resumes by itself; the hand view shows "Camera unavailable" meanwhile.
 
 With the `v0.1.0` tracker, the initial launch can take approximately 20–30 seconds. Later versions start in a few seconds once macOS has checked the files on the first launch.
 

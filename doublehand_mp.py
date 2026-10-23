@@ -98,42 +98,54 @@ class LatestFrame:
             return None, last_count
 
 
-def open_camera(latest):
-    """Open the webcam, waiting up to CAMERA_WAIT_S for the user's permission."""
-    deadline = time.monotonic() + CAMERA_WAIT_S
-    announced = False
+def open_camera(latest, wait_s, waiting_message=None):
+    """Open the webcam, trying every second for wait_s seconds (None: no limit)."""
+    deadline = None if wait_s is None else time.monotonic() + wait_s
     while not latest.stopped:
         try:
             return WebcamInput(width=FRAME_WIDTH, height=FRAME_HEIGHT)
         except RuntimeError as error:
-            if time.monotonic() >= deadline:
+            if deadline is not None and time.monotonic() >= deadline:
                 latest.stop(error)
                 return None
-            if not announced:
-                print("WAITING FOR CAMERA: allow camera access if macOS asks.", flush=True)
-                announced = True
+            if waiting_message:
+                print(waiting_message, flush=True)
+                waiting_message = None
             time.sleep(1.0)
     return None
 
 
 def camera_loop(latest):
-    cam = open_camera(latest)
-    if cam is None:
-        return
+    cam = open_camera(latest, CAMERA_WAIT_S,
+                      "WAITING FOR CAMERA: allow camera access if macOS asks.")
+    lost = False
 
     try:
-        while not latest.stopped:
+        while cam is not None and not latest.stopped:
             result = cam.read_frame()
+
             if result is None:
-                latest.stop(RuntimeError("Camera stopped sending frames."))
-                break
+                # The camera went away (another user session, another app,
+                # unplugged): wait for it as long as the tracker runs
+                if not lost:
+                    print("CAMERA LOST: waiting for the camera to come back.", flush=True)
+                    lost = True
+                cam.cleanup()
+                time.sleep(1.0)
+                cam = open_camera(latest, None)
+                continue
+
+            if lost:
+                print("CAMERA BACK: camera on, show your hands.", flush=True)
+                lost = False
 
             frame = result[0]
             if frame.shape[:2] != (FRAME_HEIGHT, FRAME_WIDTH):
                 frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
             latest.put(frame)
     finally:
-        cam.cleanup()
+        if cam is not None:
+            cam.cleanup()
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

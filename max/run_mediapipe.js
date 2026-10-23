@@ -21,6 +21,8 @@
 // Outlet:    status <step>, for the display in mediapipe_handdraw.js:
 //              starting  -> loading -> model -> camera -> ready
 //              camera_permission (waiting for the user to allow the camera)
+//              camera_lost (the camera went away, e.g. another user session;
+//                           the tracker waits for it, then sends ready again)
 //              stopped, not_found, camera_denied, stopped_unexpectedly, error
 //
 // The tracker never outlives Max: camera_off stops it, quitting Max stops it,
@@ -46,17 +48,24 @@ const STEPS = [
     [/^CREATING HANDPOSEDETECTOR/, "model"],
     [/^Streaming hand landmarks/, "camera"],
     [/^TRACKER READY/, "ready"],
+    [/^CAMERA LOST/, "camera_lost"],
+    [/^CAMERA BACK/, "ready"],
 ];
 // The tracker keeps trying while macOS asks for the camera permission
 const CAMERA_WAITING = [
     /not authorized to capture video.*requesting/i,
     /^WAITING FOR CAMERA/,
 ];
+// ("Failed list devices for backend avfoundation" also appears while the
+// permission is only pending, so it is not a failure)
 const CAMERA_FAILURE = [
     /camera access has been denied/i,
     /could not open webcam/i,
-    /failed list devices.*avfoundation/i,
 ];
+
+// Library messages that repeat while the tracker waits for the camera:
+// each one is shown once per launch
+const REPEATING = /^(OpenCV:|\[ WARN|\[WebcamInput\])/;
 
 let tracker = null;
 let manualPath = null;
@@ -162,17 +171,16 @@ function startTracker() {
     let cameraFailed = false;
     let cameraWaiting = false;
     let launchFailed = false;
-    let previousLine = null;
+    const shown = new Set();
 
     const onLine = (line) => {
         if (!line.trim()) {
             return;
         }
-        // While waiting for the camera, the same lines come back every second
-        if (line !== previousLine) {
+        if (!REPEATING.test(line) || !shown.has(line)) {
             Max.post(line);
+            shown.add(line);
         }
-        previousLine = line;
         if (tracker !== child) {
             return;
         }

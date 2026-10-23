@@ -6,7 +6,7 @@
 // Messages:
 //   left <63 floats>, right <63 floats>   hand landmarks (x, y, z per joint)
 //   status <step>                         from run_mediapipe.js:
-//       starting, loading, model, camera, ready, camera_permission,
+//       starting, loading, model, camera, ready, camera_permission, camera_lost,
 //       stopped, not_found, camera_denied, stopped_unexpectedly, error
 //   lefthandcolor r g b [a]               colour of the left hand
 //   righthandcolor r g b [a]              colour of the right hand
@@ -51,8 +51,10 @@ var MESSAGES = {
     camera_permission:    ["Camera permission needed",
                            "Click Allow in the macOS dialog to let Max use the camera."],
     not_found:            ["Tracker not found", "The Max console lists the places searched."],
-    camera_denied:        ["Camera not available",
-                           "Allow camera access in System Settings > Privacy & Security > Camera, then turn the camera on again."],
+    camera_denied:        ["Camera access denied",
+                           "Turn on Max (or this app) in System Settings > Privacy & Security > Camera, then turn the camera off and on again."],
+    camera_lost:          ["Camera unavailable",
+                           "Waiting for the camera. Another app or another user session may be using it."],
     stopped_unexpectedly: ["The tracker stopped", "See the Max console, then turn the camera on again."],
     error:                ["The tracker could not start", "See the Max console for details."]
 };
@@ -110,7 +112,7 @@ function status(step)
         if (STEPS[i].key === step)
         {
             // A camera message stays until the camera is ready or fails
-            if (phase === "camera_permission" || phase === "camera_denied")
+            if (phase === "camera_permission" || phase === "camera_denied" || phase === "camera_lost")
                 return;
 
             if (phase !== "steps" || i > stepIndex)
