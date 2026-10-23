@@ -12,11 +12,10 @@ __pycache__/
 build/
 develop-eggs/
 
-# Ready-to-run tracker included in the v0.1.0 release commit
-# Ignore every other generated dist output or local backup.
-dist/*
-!dist/doublehand_mp/
-!dist/doublehand_mp/**
+# Packaged trackers are distributed as GitHub Release assets, not in Git
+# (the v0.1.0 tag still contains the v0.1.0 tracker in dist/).
+dist/
+/tracker/
 
 downloads/
 eggs/

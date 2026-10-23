@@ -244,9 +244,9 @@ See [Max/MSP Integration](docs/max-integration.md#universal-launcher) for the la
 
 ## Packaged Tracker and `dist/`
 
-For the `v0.1.0` ready-to-run milestone, `dist/doublehand_mp/` is included in the release commit so the complete project works immediately after extraction. Other generated `dist/` outputs and local backups remain ignored.
+The packaged tracker is distributed as a GitHub Release asset, `gesturecap-tracker-macos-arm64.zip`, not in the Git repository. Place the extracted `doublehand_mp/` folder in `dist/` (or `tracker/`) at the repository root; both folders are ignored by Git.
 
-The same signed and notarized tracker is also distributed separately as `gesturecap-tracker-macos-arm64.zip` for users who do not need the complete project.
+The `v0.1.0` tag is the exception: for that ready-to-run milestone, `dist/doublehand_mp/` was included in the release commit.
 
 Release workflow:
 
@@ -259,9 +259,7 @@ Release workflow:
 7. Attach the accepted archive, its checksum and the FFmpeg source archive to a GitHub Release.
 8. Keep standalone ZIP and checksum assets outside Git history.
 
-The unpacked tracker is approximately 217 MB. The release archive is smaller because it is compressed.
-
-Future development versions may stop tracking `dist/` again. The `v0.1.0` tag will continue to preserve this ready-to-run milestone.
+The unpacked tracker is approximately 180 MB (217 MB for `v0.1.0`). The release archive is smaller because it is compressed.
 
 The current packaged tracker is built for macOS Apple Silicon (`arm64`). Intel macOS and Windows require separate builds and release assets.
 
