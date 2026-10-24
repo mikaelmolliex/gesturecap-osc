@@ -79,6 +79,7 @@ Its outlet sends `status <step>`. Connect it to the hand view (`mediapipe_handdr
 | `starting`, `loading`, `model`, `camera` | The start-up steps, one line each: Starting the hand tracker, Loading MediaPipe, Loading the hand model, Opening the camera |
 | `ready` | Camera ready. Show your hands to the camera. |
 | `camera_permission` | Camera permission needed. Click Allow in the macOS dialog to let Max use the camera. |
+| `camera_timeout` | The camera did not start: click Allow if macOS asked, then turn the camera off and on again |
 | `camera_lost` | Camera unavailable. Waiting for the camera (another app or user session may be using it); `ready` follows when it comes back |
 | `stopped` | Camera off. Turn the camera on to start. |
 | `not_found` | Tracker not found |

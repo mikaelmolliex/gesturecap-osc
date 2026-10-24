@@ -23,6 +23,7 @@
 //              camera_permission (waiting for the user to allow the camera)
 //              camera_lost (the camera went away, e.g. another user session;
 //                           the tracker waits for it, then sends ready again)
+//              camera_timeout (no camera after 60 s, without a refusal)
 //              stopped, not_found, camera_denied, stopped_unexpectedly, error
 //
 // The tracker never outlives Max: camera_off stops it, quitting Max stops it,
@@ -58,10 +59,9 @@ const CAMERA_WAITING = [
 ];
 // ("Failed list devices for backend avfoundation" also appears while the
 // permission is only pending, so it is not a failure)
-const CAMERA_FAILURE = [
-    /camera access has been denied/i,
-    /could not open webcam/i,
-];
+const CAMERA_DENIED = /camera access has been denied/i;
+// The tracker gives up after 60 s (e.g. nobody answered the macOS dialog)
+const CAMERA_GAVE_UP = /could not open webcam/i;
 
 // Library messages that repeat while the tracker waits for the camera:
 // each one is shown once per launch
@@ -193,9 +193,13 @@ function startTracker() {
             cameraWaiting = true;
             Max.outlet("status", "camera_permission");
         }
-        if (!cameraFailed && CAMERA_FAILURE.some((pattern) => pattern.test(line))) {
+        if (!cameraFailed && CAMERA_DENIED.test(line)) {
             cameraFailed = true;
             Max.outlet("status", "camera_denied");
+        }
+        if (!cameraFailed && CAMERA_GAVE_UP.test(line)) {
+            cameraFailed = true;
+            Max.outlet("status", "camera_timeout");
         }
     };
 

@@ -7,7 +7,7 @@
 //   left <63 floats>, right <63 floats>   hand landmarks (x, y, z per joint)
 //   status <step>                         from run_mediapipe.js:
 //       starting, loading, model, camera, ready, camera_permission, camera_lost,
-//       stopped, not_found, camera_denied, stopped_unexpectedly, error
+//       stopped, not_found, camera_denied, camera_timeout, stopped_unexpectedly, error
 //   lefthandcolor r g b [a]               colour of the left hand
 //   righthandcolor r g b [a]              colour of the right hand
 //                                         (0-1 like Max colours; 0-255 also accepted)
@@ -53,6 +53,8 @@ var MESSAGES = {
     not_found:            ["Tracker not found", "The Max console lists the places searched."],
     camera_denied:        ["Camera access denied",
                            "Turn on Max (or this app) in System Settings > Privacy & Security > Camera, then turn the camera off and on again."],
+    camera_timeout:       ["The camera did not start",
+                           "If macOS asked for camera access, click Allow. Then turn the camera off and on again."],
     camera_lost:          ["Camera unavailable",
                            "Waiting for the camera. Another app or another user session may be using it."],
     stopped_unexpectedly: ["The tracker stopped", "See the Max console, then turn the camera on again."],

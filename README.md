@@ -222,7 +222,7 @@ max/GestureCap_Tracker_Test.maxpat
 
 Max launches the packaged tracker. The tracker sends MediaPipe landmarks to the visualizer embedded in the Max patch.
 
-The first time, macOS asks whether Max may use the camera: click **Allow**. The tracker waits up to 60 seconds for this answer, then starts by itself. If access was denied, turn Max on in System Settings > Privacy & Security > Camera, then turn the camera off and on again.
+The first time, macOS asks whether Max may use the camera: click **Allow**. The tracker waits up to 60 seconds for this answer, then starts by itself. If nobody answers within 60 seconds, click Allow anyway, then turn the camera off and on again. If access was denied, turn Max on in System Settings > Privacy & Security > Camera: macOS then offers to quit and reopen Max, after which the camera works.
 
 If the camera goes away while tracking (another app takes it, or you switch to another user account), the tracker waits for it and resumes by itself; the hand view shows "Camera unavailable" meanwhile.
 
