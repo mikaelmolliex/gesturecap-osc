@@ -54,7 +54,7 @@ var MESSAGES = {
     camera_denied:        ["Camera access denied",
                            "Turn on Max (or this app) in System Settings > Privacy & Security > Camera, then turn the camera off and on again."],
     camera_timeout:       ["The camera did not start",
-                           "If macOS asked for camera access, click Allow. Then turn the camera off and on again."],
+                           "If macOS asked for camera access, click Allow. Then turn the camera off and on again. If you clicked Don't Allow: System Settings > Privacy & Security > Camera."],
     camera_lost:          ["Camera unavailable",
                            "Waiting for the camera. Another app or another user session may be using it."],
     stopped_unexpectedly: ["The tracker stopped", "See the Max console, then turn the camera on again."],
