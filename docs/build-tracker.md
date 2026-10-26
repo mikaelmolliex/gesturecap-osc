@@ -282,7 +282,7 @@ ditto -c -k --keepParent /private/tmp/gesturecap-complete/gesturecap-osc \
   gesturecap-osc-vX.Y.Z-macos-arm64-complete.zip
 ```
 
-Notarize and checksum this archive exactly like the tracker archive, then attach it to the same GitHub Release.
+Generate its checksum like the tracker archive's, then attach both to the same GitHub Release. It needs no second notarization: the tracker inside is the same signed and notarized build, and Gatekeeper recognises each notarized file wherever it is copied. Building it from the release tag keeps it identical to the published source.
 
 ---
 

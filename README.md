@@ -275,7 +275,7 @@ Release workflow:
 4. Compress the signed `doublehand_mp/` directory as `gesturecap-tracker-macos-arm64.zip`.
 5. Submit that exact archive to Apple's notary service.
 6. Generate and verify `gesturecap-tracker-macos-arm64.zip.sha256`.
-7. Build the complete package: the repository at the release tag with the signed tracker in `dist/doublehand_mp/`, compressed as `gesturecap-osc-vX.Y.Z-macos-arm64-complete.zip`, notarized and checksummed the same way.
+7. Build the complete package: the repository at the release tag with the same signed tracker in `dist/doublehand_mp/`, compressed as `gesturecap-osc-vX.Y.Z-macos-arm64-complete.zip`, with its checksum. It needs no second notarization: Apple's notarization covers the tracker's signed files wherever they are copied.
 8. Attach both archives, their checksums and the FFmpeg source archive to a GitHub Release.
 9. Keep the release archives and checksums outside Git history.
 
