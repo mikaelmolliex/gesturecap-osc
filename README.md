@@ -22,28 +22,43 @@ By default, tracking and OSC communication stay on the local machine. Camera fra
 
 ---
 
+## Requirements
+
+- A Mac with Apple silicon (M1 or later, including MacBook Air, MacBook Pro, Mac mini, iMac, Mac Studio and Mac Pro)
+- macOS 14 Sonoma or later
+- Max 9 (tested with Max 9.1.2)
+- A camera (built-in or USB)
+
+Python is not required: the packaged tracker carries its own runtime. Intel Macs and Windows are not supported yet; they need separate builds of the tracker.
+
+---
+
 ## Quick Start — Complete Project, No Python Installation
 
-The recommended download is the ready-to-run macOS Apple Silicon package:
+The recommended download is the ready-to-run package:
 
 ```text
-gesturecap-osc-v0.1.0-macos-arm64-complete.zip
+gesturecap-osc-v0.2.0-macos-arm64-complete.zip
 ```
 
 1. Download the complete package from the [latest GitHub Release](https://github.com/mikaelmolliex/gesturecap-osc/releases/latest).
 2. Unzip it.
-3. Open `max/GestureCap_Tracker_Test.maxpat` in Max/MSP.
-4. Enable the camera/video control.
+3. Open `max/GestureCap_Tracker_Test.maxpat` in Max.
+4. Turn the camera on in the patch, and click **Allow** when macOS asks whether Max may use the camera.
 
-That is all. The complete release already contains the signed and notarized tracker at:
+The complete package already contains the signed and notarized tracker at `dist/doublehand_mp/doublehand_mp`. No tracker folder needs to be moved.
 
-```text
-dist/doublehand_mp/doublehand_mp
-```
+While the tracker starts, the hand view shows each step, then "Camera ready. Show your hands to the camera." In our tests on a MacBook Pro M1 Max, the first hand arrived about 1 second after turning the camera on. The very first launch on a computer is slower (about 30 seconds) while macOS checks the new files.
 
-Python is not required on the performance machine, and no tracker folder needs to be moved. The `v0.1.0` tracker can take approximately 20–30 seconds to start. From the next version, the tracker runs as a single process without matplotlib: in our tests on an M1 Max, the first hand arrived about 1 second after launch. The very first launch on a computer stays slower while macOS checks the new files.
+If you only need the tracker for another Max Project, standalone, or OSC application, use the smaller tracker-only asset described in [Tracker-Only Download and Manual Integration](#tracker-only-download-and-manual-integration).
 
-This ready-to-run build currently supports macOS Apple Silicon (`arm64`). If you only need the tracker for another Max Project, standalone, or OSC application, use the smaller tracker-only asset described in [Tracker-Only Download and Manual Integration](#tracker-only-download-and-manual-integration).
+### What changed since v0.1.0
+
+- One tracker process instead of three, without matplotlib: about 1 second to the first hand instead of about 30, half the memory.
+- One launcher, `run_mediapipe.js`, for a regular patch, a Max Project and a standalone application. The tracker never keeps running without Max, even after a crash.
+- The hand view shows the start-up steps and plain messages for the camera permission, a missing camera or a missing tracker. The tracker no longer opens its own window.
+- Hand colours can be set from the patch (`lefthandcolor`, `righthandcolor`).
+- License: GPL-3.0-or-later (see [License](#license)).
 
 ---
 
@@ -78,7 +93,7 @@ Default OSC destination:
 127.0.0.1:11111
 ```
 
-The tracker has no window of its own: `mediapipe_handdraw.js` renders the landmark data inside Max/MSP. (The `v0.1.0` tracker still opens an OpenCV preview.)
+The tracker has no window of its own: `mediapipe_handdraw.js` renders the landmarks inside Max, shows the tracker's start-up steps and camera messages, and accepts `lefthandcolor r g b a` and `righthandcolor r g b a` to set the colour of each hand (neutral greys by default). See [Max/MSP Integration](docs/max-integration.md).
 
 ### Gesture Routing Matrix
 
@@ -146,7 +161,7 @@ See [Custom JSUI Dials](docs/custom-dials.md) for messages, outlets, and display
 
 ## Tracker-Only Download and Manual Integration
 
-Use this section if you cloned a version of the repository without `dist/`, or if you want to embed the tracker in your own Max Project, standalone, or OSC application. Users of the complete ready-to-run package can skip this section.
+Use this section if you cloned or downloaded the repository itself (it does not contain the tracker), or if you want to embed the tracker in your own Max Project, standalone, or OSC application. Users of the complete ready-to-run package can skip this section.
 
 ### 1. Download the tracker-only asset
 
@@ -162,13 +177,13 @@ To use it with this repository:
 2. Create `dist/` at the repository root if it is not already present.
 3. Move the extracted `doublehand_mp/` folder into `dist/`.
 
-This installation step is mandatory. The standard Max launcher cannot start MediaPipe until the executable exists at:
+This installation step is mandatory. The Max launcher cannot start MediaPipe until the executable exists at:
 
 ```text
 dist/doublehand_mp/doublehand_mp
 ```
 
-The current build is provided for macOS Apple Silicon (`arm64`). It is signed with an Apple Developer ID and notarized by Apple for distribution outside the Mac App Store.
+The current build is provided for macOS on Apple silicon (`arm64`). It is signed with an Apple Developer ID and notarized by Apple for distribution outside the Mac App Store. Beside the executable, `LICENSE`, `THIRD_PARTY_NOTICES.md` and `licenses/` hold the licenses of the tracker and of everything it embeds.
 
 The optional checksum asset is:
 
@@ -203,7 +218,7 @@ gesturecap-osc/
     ├── run_mediapipe.js
     ├── mediapipe_handdraw.js
     ├── gesture_mapper_ui_multimode_extended.js
-    └── custom.dial.v9.js
+    └── custom.dial.js
 ```
 
 The complete `_internal/` directory must remain beside the `doublehand_mp` executable. Do not move the executable by itself.
@@ -225,8 +240,6 @@ Max launches the packaged tracker. The tracker sends MediaPipe landmarks to the 
 The first time, macOS asks whether Max may use the camera: click **Allow**. The tracker waits up to 60 seconds for this answer, then starts by itself. If nobody answers within 60 seconds, click Allow anyway, then turn the camera off and on again. If access was denied, turn Max on in System Settings > Privacy & Security > Camera: macOS then offers to quit and reopen Max, after which the camera works.
 
 If the camera goes away while tracking (another app takes it, or you switch to another user account), the tracker waits for it and resumes by itself; the hand view shows "Camera unavailable" meanwhile.
-
-With the `v0.1.0` tracker, the initial launch can take approximately 20–30 seconds. Later versions start in a few seconds once macOS has checked the files on the first launch.
 
 ### Tracker paths by integration mode
 
@@ -262,12 +275,13 @@ Release workflow:
 4. Compress the signed `doublehand_mp/` directory as `gesturecap-tracker-macos-arm64.zip`.
 5. Submit that exact archive to Apple's notary service.
 6. Generate and verify `gesturecap-tracker-macos-arm64.zip.sha256`.
-7. Attach the accepted archive, its checksum and the FFmpeg source archive to a GitHub Release.
-8. Keep standalone ZIP and checksum assets outside Git history.
+7. Build the complete package: the repository at the release tag with the signed tracker in `dist/doublehand_mp/`, compressed as `gesturecap-osc-vX.Y.Z-macos-arm64-complete.zip`, notarized and checksummed the same way.
+8. Attach both archives, their checksums and the FFmpeg source archive to a GitHub Release.
+9. Keep the release archives and checksums outside Git history.
 
 The unpacked tracker is approximately 180 MB (217 MB for `v0.1.0`). The release archive is smaller because it is compressed.
 
-The current packaged tracker is built for macOS Apple Silicon (`arm64`). Intel macOS and Windows require separate builds and release assets.
+The current packaged tracker is built for macOS on Apple silicon (`arm64`) and needs macOS 14 or later. Intel Macs and Windows require separate builds and release assets.
 
 Developers who want to run from Python source can use the repository's Python environment. See [Build Tracker on macOS](docs/build-tracker.md) for the PyInstaller workflow.
 
@@ -277,12 +291,15 @@ Developers who want to run from Python source can use the repository's Python en
 
 ```text
 max/GestureCap_Tracker_Test.maxpat       Main Max/MSP demonstration patch
-dist/doublehand_mp/                      Packaged local MediaPipe tracker
-max/mediapipe_handdraw.js                Landmark visualizer
+max/run_mediapipe.js                     Tracker launcher (patch, Max Project, standalone)
+max/mediapipe_handdraw.js                Hand view: landmarks, start-up steps, camera messages
 max/gesture_mapper_ui_multimode_extended.js
                                          Gesture routing matrix
-max/custom.dial.v9.js                    Custom parameter dial
-max/run_mediapipe.js                     Tracker launcher (patch, Max Project, standalone)
+max/custom.dial.js                       Custom parameter dial
+doublehand_mp.py                         Tracker source (Python)
+doublehand_mp.spec                       PyInstaller build recipe
+tools/collect_licenses.py                Adds the license texts to a packaged tracker
+dist/doublehand_mp/                      Packaged tracker (from a release, not in Git)
 ```
 
 ---

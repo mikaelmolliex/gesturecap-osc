@@ -40,7 +40,7 @@ Selects active sources and maps controller axes to the 12 destination parameters
 ### Custom Parameter Dial
 
 ```text
-custom.dial.v9.js
+custom.dial.js
 ```
 
 Displays raw input and processes calibration, inversion, exponent, playable range, units, and triggers.
@@ -130,7 +130,7 @@ Tracker
 GestureCap_Tracker_Test.maxpat
   ├── mediapipe_handdraw.js
   ├── gesture_mapper_ui_multimode_extended.js
-  └── custom.dial.v9.js × 12
+  └── custom.dial.js × 12
 ```
 
 The JSUI components handle visualization, mapping, and parameter control. OSC reception and real-time routing remain in Max/MSP.

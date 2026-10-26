@@ -5,7 +5,7 @@ The custom dial is a reusable Max/MSP `jsui` controller and visualizer for conti
 The current implementation is:
 
 ```text
-custom.dial.v9.js
+custom.dial.js
 ```
 
 It is designed for a compact interface of approximately `124 × 112 px` and can be duplicated for up to 12 destination parameters.
@@ -133,7 +133,7 @@ Sensitivity affects mouse dragging only. Sensor smoothing should happen elsewher
 
 ## Outlets
 
-The current `custom.dial.v9.js` design uses five outlets:
+The current `custom.dial.js` design uses five outlets:
 
 | Outlet | Output |
 | --- | --- |
@@ -157,7 +157,7 @@ Holding Shift enables finer manual adjustment. The `sensitivity` message control
 
 ## Preset Storage
 
-The v9 dial exposes its current normalized output value to Max `pattrstorage` through `getvalueof()` and `setvalueof()`.
+The dial exposes its current normalized output value to Max `pattrstorage` through `getvalueof()` and `setvalueof()`.
 
 Mapping parameters such as Near/Far, Range, Invert, Exponent, units, and triggers should continue to be stored by their corresponding Max controls.
 

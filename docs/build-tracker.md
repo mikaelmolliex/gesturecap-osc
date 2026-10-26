@@ -268,6 +268,22 @@ The packaged tracker embeds a GPL build of FFmpeg (see [THIRD_PARTY_NOTICES.md](
 
 The ZIP, checksum, build directories, and `dist/` are generated outputs and must remain outside Git history.
 
+### Complete package
+
+For Max users, also publish the whole project with the tracker already in place:
+
+```bash
+mkdir -p /private/tmp/gesturecap-complete
+git archive --format=tar --prefix=gesturecap-osc/ vX.Y.Z | tar -x -C /private/tmp/gesturecap-complete
+mkdir -p /private/tmp/gesturecap-complete/gesturecap-osc/dist
+ditto /private/tmp/gesturecap-release-dist/doublehand_mp \
+  /private/tmp/gesturecap-complete/gesturecap-osc/dist/doublehand_mp
+ditto -c -k --keepParent /private/tmp/gesturecap-complete/gesturecap-osc \
+  gesturecap-osc-vX.Y.Z-macos-arm64-complete.zip
+```
+
+Notarize and checksum this archive exactly like the tracker archive, then attach it to the same GitHub Release.
+
 ---
 
 ## Max Standalone Applications
