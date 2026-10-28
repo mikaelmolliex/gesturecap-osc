@@ -15,6 +15,7 @@ GestureCap OSC runs MediaPipe hand tracking locally on the Mac, sends the landma
 | `gesturecap-osc-v0.2.0-macos-arm64-complete.zip` | Max users: the whole project with the signed tracker in place. Unzip, open `max/GestureCap_Tracker_Test.maxpat`, turn the camera on. |
 | `gesturecap-tracker-macos-arm64.zip` | The signed and notarized tracker alone, to embed in your own patch, Max Project or standalone |
 | `*.sha256` | Checksums of both archives |
+| `ffmpeg-7.1.1.tar.xz.asc` | FFmpeg's signature of its source archive |
 | `ffmpeg-7.1.1.tar.xz` | Source code of the FFmpeg build embedded in the tracker (GPL) |
 
 ## What changed since v0.1.0
@@ -31,7 +32,9 @@ GestureCap OSC runs MediaPipe hand tracking locally on the Mac, sends the landma
 
 On a MacBook Pro M1 Max (macOS 26.2, Max 9.1.2): the demo patch with the hand view, matrix and dials; start and stop; quitting and force-quitting Max; a new user account with a fresh download (camera permission allowed, denied, unanswered; switching user sessions).
 
-Not tested yet: other Apple-silicon models, a signed download on another Mac, Max standalone applications.
+On another Mac (Apple M1), the signed tracker downloaded as a file: no macOS warning, camera permission, then tracking.
+
+Not tested yet: Max standalone applications, other Apple-silicon models than M1 and M1 Max.
 
 ## Credits
 
