@@ -20,6 +20,12 @@ By default, tracking and OSC communication stay on the local machine. Camera fra
 
 ![GestureCap OSC demonstration](media/gesture-cap-demo.gif)
 
+> **Which download?** The packaged tracker is not in the Git repository: it is attached to each [GitHub Release](https://github.com/mikaelmolliex/gesturecap-osc/releases/latest).
+>
+> - **To use it in Max:** download `gesturecap-osc-vX.Y.Z-macos-arm64-complete.zip`, the whole project with the tracker in place. See [Quick Start](#quick-start--complete-project-no-python-installation).
+> - **To embed the tracker elsewhere** (your own patch, Max Project, standalone or OSC application): download `gesturecap-tracker-macos-arm64.zip`. See [Tracker-Only Download](#tracker-only-download-and-manual-integration).
+> - **A clone of this repository**, "Code → Download ZIP", and the "Source code" archives that GitHub adds to every release contain the source only, without the tracker: the patch then shows "Tracker not found".
+
 ---
 
 ## Requirements
@@ -299,7 +305,8 @@ max/custom.dial.js                       Custom parameter dial
 doublehand_mp.py                         Tracker source (Python)
 doublehand_mp.spec                       PyInstaller build recipe
 tools/collect_licenses.py                Adds the license texts to a packaged tracker
-dist/doublehand_mp/                      Packaged tracker (from a release, not in Git)
+dist/doublehand_mp/                      Packaged tracker: in the complete package,
+                                         not in a clone (see Releases)
 ```
 
 ---

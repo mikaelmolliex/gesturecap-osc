@@ -17,6 +17,7 @@ GestureCap OSC runs MediaPipe hand tracking locally on the Mac, sends the landma
 | `*.sha256` | Checksums of both archives |
 | `ffmpeg-7.1.1.tar.xz.asc` | FFmpeg's signature of its source archive |
 | `ffmpeg-7.1.1.tar.xz` | Source code of the FFmpeg build embedded in the tracker (GPL) |
+| Source code (zip, tar.gz) | Added automatically by GitHub: the repository at this tag, without the tracker |
 
 ## What changed since v0.1.0
 
